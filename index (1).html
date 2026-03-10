@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyForever - GitHub Pages</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6c63ff;
+            --secondary-color: #4a44b5;
+            --text-color: #333;
+            --bg-color: #fff;
+            --card-bg: #f9f9f9;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        .dark-mode {
+            --primary-color: #8b85ff;
+            --secondary-color: #6c63ff;
+            --text-color: #f0f0f0;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 重新设计的导航栏 */
+        header {
+            background-color: var(--bg-color);
+            box-shadow: var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode header.scrolled {
+            background-color: rgba(18, 18, 18, 0.95);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 25px;
+            position: relative;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 8px 0;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-left: 20px;
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary-color);
+            transform: rotate(30deg);
+        }
+
+        /* 汉堡菜单 */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 5px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: var(--text-color);
+            margin: 3px 0;
+            transition: var(--transition);
+            border-radius: 2px;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+
+        /* 主内容区 */
+        section {
+            padding: 100px 0;
+        }
+
+        .hero {
+            display: flex;
+            align-items: center;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        .hero-content {
+            flex: 1;
+            padding-right: 30px;
+        }
+
+        .hero-image {
+            flex: 1;
+            text-align: center;
+        }
+
+        .hero-image img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: var(--shadow);
+            animation: float 3s ease-in-out infinite;
+            border: 3px solid var(--primary-color);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .highlight {
+            color: var(--primary-color);
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        /* 关于部分 */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .about-text h2, .tools h2, .skills h2, .hobbies h2, .contact h2, .projects h2 {
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .about-text h2:after, .tools h2:after, .skills h2:after, .hobbies h2:after, .contact h2:after, .projects h2:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 70px;
+            height: 4px;
+            background-color: var(--primary-color);
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stats {
+            background-color: var(--card-bg);
+            padding: 30px 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .stats h3 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        /* 工具部分 */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .tool-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .tool-img {
+            height: 180px;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .tool-info {
+            padding: 20px;
+        }
+
+        .tool-info h3 {
+            margin-bottom: 10px;
+        }
+
+        .tool-tags {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .tag {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        /* 技能部分 */
+        .skills-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .skill-category {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .skill-category h3 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .skill-list {
+            list-style: none;
+        }
+
+        .skill-list li {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .skill-list i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        /* 扩列部分 */
+        .social-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .social-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .social-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .social-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .social-card h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .social-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .social-link:hover {
+            text-decoration: underline;
+        }
+
+        /* 兴趣部分 */
+        .hobbies-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .hobby-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .hobby-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .hobby-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .hobby-card h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        /* 项目作业栏目 */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .project-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .project-img {
+            height: 180px;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .project-info {
+            padding: 20px;
+        }
+
+        .project-info h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .project-info p {
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .project-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .project-link:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* 联系部分 */
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .contact-item i {
+            background-color: var(--primary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .social-links {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            margin-right: 15px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            transform: translateY(-5px);
+            background-color: var(--secondary-color);
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* 页脚 */
+        footer {
+            background-color: var(--card-bg);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .hero, .about-content, .contact-content {
+                flex-direction: column;
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-content, .about-text {
+                padding-right: 0;
+                margin-bottom: 40px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .hamburger {
+                display: flex;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                flex-direction: column;
+                background-color: var(--bg-color);
+                text-align: center;
+                transition: var(--transition);
+                box-shadow: var(--shadow);
+                padding: 20px 0;
+            }
+            
+            .nav-links.active {
+                left: 0;
+            }
+            
+            .nav-links li {
+                margin: 15px 0;
+            }
+            
+            .hero-image img {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 重新设计的导航栏 -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <i class="fas fa-code"></i>
+                    MoneyForever
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#home" class="active">首页</a></li>
+                    <li><a href="#about">关于</a></li>
+                    <li><a href="#tools">工具</a></li>
+                    <li><a href="#skills">技能</a></li>
+                    <li><a href="#social">扩列</a></li>
+                    <li><a href="#hobbies">兴趣爱好</a></li>
+                    <li><a href="#projects">项目作业</a></li>
+                    <li><a href="#contact">联系</a></li>
+                </ul>
+                <div class="nav-right">
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="hamburger" id="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main>
+        <!-- 首页部分 -->
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>你好，我是 <span class="highlight">MoneyForever</span></h1>
+                    <p>一名软件工程大一新生</p>
+                    <a href="#tools" class="btn">查看我的工具</a>
+                </div>
+                <div class="hero-image">
+                    <img src="avatar.jpg" alt="个人头像">
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于部分 -->
+        <section id="about">
+            <div class="container">
+                <div class="about-content">
+                    <div class="about-text">
+                        <h2>关于我</h2>
+                        <p>电子科技大学软件学院大一学生</p>
+                        <p>新手菜鸟，请多指教</p>
+                        <a href="#" class="btn">下载简历</a>
+                    </div>
+                    <div class="about-stats">
+                        <div class="stats">
+                            <h3>0</h3>
+                            <p>年开发经验</p>
+                        </div>
+                        <div class="stats">
+                            <h3>0</h3>
+                            <p>完成项目</p>
+                        </div>
+                        <div class="stats">
+                            <h3>0</h3>
+                            <p>技术栈</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 工具部分 -->
+        <section id="tools">
+            <div class="container">
+                <div class="tools">
+                    <h2>我的工具</h2>
+                    <div class="tools-grid">
+                        <div class="tool-card">
+                            <div class="tool-img">VSCode</div>
+                            <div class="tool-info">
+                                <h3>VSCode</h3>
+                                <p>强大的代码编辑器，支持多种编程语言和扩展。</p>
+                            </div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-img">Anaconda</div>
+                            <div class="tool-info">
+                                <h3>Anaconda</h3>
+                                <p>Python数据科学平台，包含众多常用库和环境管理工具。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 技能部分 -->
+        <section id="skills">
+            <div class="container">
+                <div class="skills">
+                    <h2>我的技能</h2>
+                    <div class="skills-container">
+                        <div class="skill-category">
+                            <h3>工具</h3>
+                            <ul class="skill-list">
+                                <li><i class="fas fa-check"></i> Git & GitHub</li>
+                                <li><i class="fas fa-check"></i> VSCode</li>
+                                <li><i class="fas fa-check"></i> Anaconda</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 扩列部分 -->
+        <section id="social">
+            <div class="container">
+                <div class="social">
+                    <h2>扩列</h2>
+                    <div class="social-container">
+                        <div class="social-card">
+                            <div class="social-icon">
+                                <i class="fab fa-github"></i>
+                            </div>
+                            <h3>GitHub</h3>
+                            <p>我的GitHub主页，包含我的代码仓库和项目。</p>
+                            <a href="https://github.com/lucky-money-account" target="_blank" class="social-link">访问我的GitHub</a>
+                        </div>
+                        <div class="social-card">
+                            <div class="social-icon">
+                                <i class="fab fa-bilibili"></i>
+                            </div>
+                            <h3>B站</h3>
+                            <p>我的B站主页，欢迎关注。</p>
+                            <a href="#" class="social-link">ID: 381827644</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 兴趣爱好部分 -->
+        <section id="hobbies">
+            <div class="container">
+                <div class="hobbies">
+                    <h2>我的兴趣爱好</h2>
+                    <div class="hobbies-container">
+                        <div class="hobby-card">
+                            <div class="hobby-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h3>编程</h3>
+                            <p>热爱探索新的编程语言和技术框架，享受解决复杂问题的过程。</p>
+                        </div>
+                        <div class="hobby-card">
+                            <div class="hobby-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <h3>阅读</h3>
+                            <p>喜欢阅读技术书籍、科幻小说和历史类书籍，不断扩展知识边界。</p>
+                        </div>
+                        <div class="hobby-card">
+                            <div class="hobby-icon">
+                                <i class="fas fa-hiking"></i>
+                            </div>
+                            <h3>徒步旅行</h3>
+                            <p>享受大自然，定期进行徒步旅行，探索未知的风景和放松心情。</p>
+                        </div>
+                        <div class="hobby-card">
+                            <div class="hobby-icon">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <h3>Minecraft</h3>
+                            <p>欢迎找我联机</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 新增：项目作业栏目 -->
+        <section id="projects">
+            <div class="container">
+                <div class="projects">
+                    <h2>项目作业</h2>
+                    <div class="projects-grid">
+                        <div class="project-card">
+                            <div class="project-img">
+                                <i class="fas fa-image fa-3x"></i>
+                            </div>
+                            <div class="project-info">
+                                <h3>图像变换和增强</h3>
+                                <p>对视频每一帧进行灰度化、缩放、高斯去噪、直方图均衡化处理，并展示单帧结果。</p>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/PBLF:Image_Processing" target="_blank" class="project-link">
+                                    查看作业 <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <!-- 可继续添加更多作业卡片 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 联系部分 -->
+        <section id="contact">
+            <div class="container">
+                <div class="contact">
+                    <h2>联系我</h2>
+                    <div class="contact-content">
+                        <div class="contact-info">
+                            <p>如果您对我的工作感兴趣或有任何问题，请随时与我联系！</p>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <div>
+                                    <h3>邮箱</h3>
+                                    <p>18148140820@163.com</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div>
+                                    <h3>地址</h3>
+                                    <p>电子科技大学沙河校区</p>
+                                </div>
+                            </div>
+                            <div class="social-links">
+                                <a href="https://github.com/lucky-money-account" target="_blank"><i class="fab fa-github"></i></a>
+                                <a href="#"><i class="fab fa-linkedin"></i></a>
+                                <a href="#"><i class="fab fa-weibo"></i></a>
+                            </div>
+                        </div>
+                        <div class="contact-form">
+                            <form>
+                                <input type="text" placeholder="您的姓名" required>
+                                <input type="email" placeholder="您的邮箱" required>
+                                <input type="text" placeholder="主题" required>
+                                <textarea placeholder="您的消息" rows="5" required></textarea>
+                                <button type="submit" class="btn">发送消息</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 MoneyForever. 保留所有权利.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 主题切换功能
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        });
+
+        // 汉堡菜单功能
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+
+        // 平滑滚动和导航高亮
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                // 平滑滚动到目标元素
+                targetElement.scrollIntoView({
+                    behavior: 'smooth'
+                });
+                
+                // 更新导航栏活动状态
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    link.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 在移动设备上点击后关闭菜单
+                if (window.innerWidth <= 768) {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('active');
+                }
+            });
+        });
+
+        // 滚动时更新导航栏样式和活动状态
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            
+            // 更新导航栏活动状态
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-links a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // 页面加载时设置初始活动状态
+        window.addEventListener('load', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

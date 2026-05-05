@@ -231,12 +231,47 @@
             height: 130px; display: flex; align-items: center; justify-content: center;
             font-size: 2rem; color: white; position: relative; overflow: hidden;
         }
-        .proj-header i { position: relative; z-index: 1; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); transition: transform 0.4s; }
-        .proj-card:hover .proj-header i { transform: scale(1.12) rotate(-3deg); }
-        .proj-num {
-            position: absolute; top: 6px; right: 10px; font-family: var(--font-mono);
-            font-size: 3rem; font-weight: 900; opacity: 0.1; color: white; line-height: 1;
+        .proj-header > i,
+        .proj-header > .proj-num { transition: opacity 0.35s, transform 0.35s; }
+        .proj-card:hover .proj-header > i { opacity: 0; transform: scale(0.5); }
+        .proj-card:hover .proj-header > .proj-num { opacity: 0; }
+        .proj-preview {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 6px;
+            opacity: 0; transition: opacity 0.4s; pointer-events: none;
         }
+        .proj-card:hover .proj-preview { opacity: 1; }
+        .preview-label {
+            font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 2px;
+            color: rgba(255,255,255,0.7);
+        }
+        /* Preview: scanning line (card 1) */
+        .preview-scan { position: relative; width: 70px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; }
+        .scan-line { position: absolute; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.7); animation: scanSweep 1.8s ease-in-out infinite; box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+        @keyframes scanSweep { 0%,100% { top: 0%; } 50% { top: 95%; } }
+        /* Preview: digit flicker (card 2) */
+        .preview-digits { font-family: var(--font-mono); font-size: 2rem; font-weight: 700; color: rgba(255,255,255,0.9); }
+        .digit-span { display: inline-block; animation: digitChange 1.2s steps(1) infinite; }
+        .digit-span:nth-child(2) { animation-delay: 0.15s; }
+        .digit-span:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes digitChange { 0% { opacity: 0; } 12% { opacity: 1; } 24% { opacity: 1; } 36% { opacity: 0; } 100% { opacity: 0; } }
+        /* Preview: weather (card 3) */
+        .preview-weather { display: flex; align-items: center; gap: 12px; }
+        .preview-weather i { font-size: 1.6rem; animation: weatherPulse 2s ease-in-out infinite; }
+        .temp-display { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; animation: tempShift 3s ease-in-out infinite; }
+        @keyframes weatherPulse { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+        @keyframes tempShift { 0%,100% { color: #f97316; } 25% { color: #3b82f6; } 50% { color: #22c55e; } 75% { color: #f97316; } }
+        /* Preview: detection box (card 4) */
+        .preview-detect { position: relative; width: 64px; height: 48px; display: flex; align-items: center; justify-content: center; }
+        .preview-detect i { position: relative; z-index: 1; }
+        .detect-box { position: absolute; width: 100%; height: 100%; border: 2px solid rgba(255,255,255,0.5); border-radius: 4px; animation: detectPulse 1.5s ease-in-out infinite; }
+        .detect-corner { position: absolute; width: 10px; height: 10px; border-color: rgba(255,255,255,0.9); border-style: solid; animation: cornerFlash 1.5s ease-in-out infinite; }
+        .detect-corner.tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .detect-corner.tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+        .detect-corner.bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+        .detect-corner.br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+        @keyframes detectPulse { 0%,100% { border-color: rgba(255,255,255,0.3); } 50% { border-color: rgba(255,255,255,0.9); } }
+        @keyframes cornerFlash { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
         .proj-body { padding: 20px 22px 22px; }
         .proj-body h3 { font-family: var(--font-mono); font-size: 0.95rem; letter-spacing: 1px; margin-bottom: 6px; color: var(--text); }
         .proj-body > p { color: var(--text-dim); font-size: 0.84rem; margin-bottom: 12px; line-height: 1.5; }
@@ -287,7 +322,7 @@
         .link-neon:hover { text-shadow: 0 0 10px var(--cyan); }
 
         /* ── CONTACT ── */
-        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .contact-grid { max-width: 560px; margin: 0 auto; }
         .contact-info p.intro { color: var(--text-dim); margin-bottom: 24px; }
         .ci-item { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
         .ci-item i {
@@ -306,17 +341,6 @@
         }
         .contact-socials a:hover { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 12px rgba(0, 229, 255, 0.2); transform: translateY(-3px); }
 
-        .terminal-form input,
-        .terminal-form textarea {
-            width: 100%; padding: 12px 16px; margin-bottom: 14px;
-            background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px;
-            color: var(--text); font-family: var(--font-mono); font-size: 0.85rem;
-            transition: all 0.3s; outline: none; letter-spacing: 0.5px;
-        }
-        .terminal-form input:focus,
-        .terminal-form textarea:focus { border-color: var(--cyan); box-shadow: 0 0 12px rgba(0, 229, 255, 0.1); }
-        .terminal-form textarea { resize: vertical; min-height: 120px; }
-
         /* ── FOOTER ── */
         footer {
             padding: 36px 0; text-align: center; border-top: 1px solid var(--border);
@@ -332,7 +356,7 @@
         @media (max-width: 768px) {
             .hero .container { flex-direction: column; text-align: center; }
             .hero h1 { font-size: 2rem; }
-            .about-grid, .contact-grid { grid-template-columns: 1fr; }
+            .about-grid { grid-template-columns: 1fr; }
             .projects-grid, .social-grid { grid-template-columns: 1fr; }
             .hobby-grid { grid-template-columns: repeat(2, 1fr); }
             .cards-grid { grid-template-columns: 1fr; }
@@ -573,6 +597,13 @@
                         <div class="proj-header" style="background:linear-gradient(135deg,#a855f7,#6366f1);">
                             <span class="proj-num">01</span>
                             <i class="fas fa-image fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-scan">
+                                    <i class="fas fa-image" style="position:relative;z-index:1;"></i>
+                                    <div class="scan-line"></div>
+                                </div>
+                                <span class="preview-label">SCANNING_FRAME</span>
+                            </div>
                         </div>
                         <div class="proj-body">
                             <h3>图像变换和增强</h3>
@@ -592,6 +623,12 @@
                         <div class="proj-header" style="background:linear-gradient(135deg,#f97316,#ef4444);">
                             <span class="proj-num">02</span>
                             <i class="fas fa-robot fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-digits">
+                                    <span class="digit-span">4</span><span class="digit-span">7</span><span class="digit-span">2</span>
+                                </div>
+                                <span class="preview-label">CLASSIFYING_MNIST</span>
+                            </div>
                         </div>
                         <div class="proj-body">
                             <h3>kNN 手写数字识别</h3>
@@ -612,6 +649,13 @@
                         <div class="proj-header" style="background:linear-gradient(135deg,#3b82f6,#06b6d4);">
                             <span class="proj-num">03</span>
                             <i class="fas fa-cloud-sun-rain fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-weather">
+                                    <i class="fas fa-cloud-rain"></i>
+                                    <span class="temp-display">22&#176;</span>
+                                </div>
+                                <span class="preview-label">FORECASTING_ERA5</span>
+                            </div>
                         </div>
                         <div class="proj-body">
                             <h3>Weather Forcast · 西南天气预测</h3>
@@ -631,6 +675,17 @@
                         <div class="proj-header" style="background:linear-gradient(135deg,#22c55e,#14b8a6);">
                             <span class="proj-num">04</span>
                             <i class="fas fa-eye fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-detect">
+                                    <i class="fas fa-camera" style="font-size:1.4rem;"></i>
+                                    <div class="detect-box"></div>
+                                    <div class="detect-corner tl"></div>
+                                    <div class="detect-corner tr"></div>
+                                    <div class="detect-corner bl"></div>
+                                    <div class="detect-corner br"></div>
+                                </div>
+                                <span class="preview-label">DETECTING_OBJECTS</span>
+                            </div>
                         </div>
                         <div class="proj-body">
                             <h3>智能对象识别系统</h3>
@@ -670,15 +725,6 @@
                             <a href="#"><i class="fab fa-linkedin"></i></a>
                             <a href="#"><i class="fab fa-weibo"></i></a>
                         </div>
-                    </div>
-                    <div class="terminal-form reveal">
-                        <form>
-                            <input type="text" placeholder="> 您的姓名" required>
-                            <input type="email" placeholder="> 您的邮箱" required>
-                            <input type="text" placeholder="> 主题" required>
-                            <textarea placeholder="> 您的消息..." rows="5" required></textarea>
-                            <button type="submit" class="btn primary">发送消息 <i class="fas fa-paper-plane"></i></button>
-                        </form>
                     </div>
                 </div>
             </div>

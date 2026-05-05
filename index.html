@@ -446,59 +446,138 @@
         /* 项目作业栏目 */
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
         }
 
         .project-card {
+            position: relative;
             background-color: var(--card-bg);
-            border-radius: 10px;
+            border-radius: 16px;
             overflow: hidden;
             box-shadow: var(--shadow);
-            transition: var(--transition);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid transparent;
         }
 
         .project-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary-color);
         }
 
         .project-img {
-            height: 180px;
-            background-color: var(--primary-color);
+            position: relative;
+            height: 150px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            overflow: hidden;
+        }
+
+        .project-img i {
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+            transition: transform 0.4s ease;
+        }
+
+        .project-card:hover .project-img i {
+            transform: scale(1.15) rotate(-5deg);
+        }
+
+        .project-number {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 3.5rem;
+            font-weight: 900;
+            opacity: 0.12;
+            color: white;
+            line-height: 1;
+            pointer-events: none;
+            font-family: 'Segoe UI', sans-serif;
         }
 
         .project-info {
-            padding: 20px;
+            padding: 22px 20px 20px;
         }
 
         .project-info h3 {
-            margin-bottom: 10px;
+            margin-bottom: 6px;
+            font-size: 1.1rem;
+            color: var(--text-color);
+            transition: color 0.3s;
+        }
+
+        .project-card:hover .project-info h3 {
             color: var(--primary-color);
         }
 
-        .project-info p {
-            margin-bottom: 15px;
+        .project-info > p {
+            margin-bottom: 12px;
             color: var(--text-color);
+            opacity: 0.75;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .project-tag {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: rgba(108, 99, 255, 0.08);
+            color: var(--primary-color);
+            border: 1px solid rgba(108, 99, 255, 0.15);
+            transition: all 0.3s;
+        }
+
+        .project-card:hover .project-tag {
+            background: rgba(108, 99, 255, 0.15);
+            border-color: rgba(108, 99, 255, 0.3);
+        }
+
+        .dark-mode .project-tag {
+            background: rgba(139, 133, 255, 0.1);
+            border-color: rgba(139, 133, 255, 0.2);
+        }
+
+        .dark-mode .project-card:hover .project-tag {
+            background: rgba(139, 133, 255, 0.2);
         }
 
         .project-link {
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: var(--primary-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 16px;
             color: white;
             text-decoration: none;
             border-radius: 20px;
             font-weight: 500;
-            transition: var(--transition);
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
         }
 
         .project-link:hover {
-            background-color: var(--secondary-color);
+            transform: translateX(3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* 联系部分 */
@@ -815,80 +894,113 @@
             </div>
         </section>
 
-        <!-- 新增：项目作业栏目 -->
+        <!-- 项目作业栏目 -->
         <section id="projects">
             <div class="container">
                 <div class="projects">
                     <h2>项目作业</h2>
-                   <div class="projects-grid">
-                        <!-- 第一个作业卡片（图像处理） -->
+                    <div class="projects-grid">
+
+                        <!-- 01 · 图像处理 -->
                         <div class="project-card">
-                            <div class="project-img">
-                                <i class="fas fa-image fa-3x"></i>
-                        </div>
-                        <div class="project-info">
-                            <h3>图像变换和增强</h3>
-                            <p>对视频每一帧进行灰度化、缩放、高斯去噪、直方图均衡化处理，并展示单帧结果。</p>
-                             <!-- 按钮容器：flex 布局保证并排且间距合理 -->
-                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                    <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/PBLF-Image_Processing/video_processing_modified.ipynb" target="_blank" class="project-link">
-                                            查看作业<i class="fas fa-arrow-right"></i>
-                                        </a>
-                                        <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/PBLF-Image_Processing/learning_notes.md" target="_blank" class="project-link">
-                                            学习笔记 <i class="fas fa-book"></i>
-                             </a>
-                        </div>
-                    </div>
-                    <!-- 第二个作业卡片（kNN学习笔记） -->
-                   <div class="project-card">
-                        <div class="project-img">
-                            <i class="fas fa-robot fa-3x"></i>
-                                </div>
-                                    <div class="project-info">
-                                        <h3>使用kNN进行手写数字识别</h3>
-                                            <p>学习笔记：k近邻算法原理、代码解析、准确率分析及与其他图像处理技术的交叉思考。</p>
-                                        <!-- 按钮容器：flex 布局保证并排且间距合理 -->
-                                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/kNN/learning_notes.md" target="_blank" class="project-link">
-                                                    kNN笔记 <i class="fas fa-book"></i>
-                                                        </a>
-                                                    <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/kNN/mnist_learning_notes.md" target="_blank" class="project-link">
-                                                    MNIST笔记 <i class="fas fa-brain"></i>
-                                                        </a>
-                                            </div>
-                                    </div>
-                        </div>
-                        <!-- 第三个作业卡片（天气预报） -->
-                        <div class="project-card">
-                            <div class="project-img">
-                                <i class="fas fa-cloud-sun fa-3x"></i>
+                            <div class="project-img" style="background: linear-gradient(135deg, #a855f7, #6366f1);">
+                                <span class="project-number">01</span>
+                                <i class="fas fa-image fa-2x"></i>
                             </div>
                             <div class="project-info">
-                                <h3>Weather Forcast - 西南地区深度学习天气预报</h3>
-                                <p>基于LSTM和Transformer的深度学习天气预测系统，使用真实ERA5气象数据，提供交互式预测面板。</p>
+                                <h3>图像变换和增强</h3>
+                                <p>对视频每一帧进行灰度化、缩放、高斯去噪、直方图均衡化处理，并展示单帧结果。</p>
+                                <div class="project-tags">
+                                    <span class="project-tag">Python</span>
+                                    <span class="project-tag">OpenCV</span>
+                                    <span class="project-tag">图像处理</span>
+                                </div>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                    <a href="https://github.com/lucky-money-account/Weather-Forcast" target="_blank" class="project-link">
+                                    <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/PBLF-Image_Processing/video_processing_modified.ipynb" target="_blank" class="project-link" style="background: linear-gradient(135deg, #a855f7, #6366f1);">
+                                        查看作业 <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                    <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/PBLF-Image_Processing/learning_notes.md" target="_blank" class="project-link" style="background: linear-gradient(135deg, #a855f7, #6366f1);">
+                                        学习笔记 <i class="fas fa-book"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 02 · kNN 手写数字识别 -->
+                        <div class="project-card">
+                            <div class="project-img" style="background: linear-gradient(135deg, #f97316, #ef4444);">
+                                <span class="project-number">02</span>
+                                <i class="fas fa-robot fa-2x"></i>
+                            </div>
+                            <div class="project-info">
+                                <h3>使用 kNN 进行手写数字识别</h3>
+                                <p>学习笔记：k 近邻算法原理、代码解析、准确率分析及与其他图像处理技术的交叉思考。</p>
+                                <div class="project-tags">
+                                    <span class="project-tag">Python</span>
+                                    <span class="project-tag">scikit-learn</span>
+                                    <span class="project-tag">kNN</span>
+                                    <span class="project-tag">MNIST</span>
+                                </div>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/kNN/learning_notes.md" target="_blank" class="project-link" style="background: linear-gradient(135deg, #f97316, #ef4444);">
+                                        kNN 笔记 <i class="fas fa-book"></i>
+                                    </a>
+                                    <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/kNN/mnist_learning_notes.md" target="_blank" class="project-link" style="background: linear-gradient(135deg, #f97316, #ef4444);">
+                                        MNIST 笔记 <i class="fas fa-brain"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 03 · 天气预报 -->
+                        <div class="project-card">
+                            <div class="project-img" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);">
+                                <span class="project-number">03</span>
+                                <i class="fas fa-cloud-sun-rain fa-2x"></i>
+                            </div>
+                            <div class="project-info">
+                                <h3>Weather Forcast · 西南天气预测</h3>
+                                <p>基于 LSTM 和 Transformer 的深度学习天气预测系统，使用真实 ERA5 气象数据，提供交互式预测面板。</p>
+                                <div class="project-tags">
+                                    <span class="project-tag">Python</span>
+                                    <span class="project-tag">PyTorch</span>
+                                    <span class="project-tag">LSTM</span>
+                                    <span class="project-tag">Streamlit</span>
+                                </div>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <a href="https://github.com/lucky-money-account/Weather-Forcast" target="_blank" class="project-link" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);">
                                         查看项目 <i class="fas fa-arrow-right"></i>
                                     </a>
                                 </div>
                             </div>
                         </div>
-                        <!-- 第四个作业卡片（智能对象识别） -->
+
+                        <!-- 04 · 智能对象识别 -->
                         <div class="project-card">
-                            <div class="project-img">
-                                <i class="fas fa-eye fa-3x"></i>
+                            <div class="project-img" style="background: linear-gradient(135deg, #22c55e, #14b8a6);">
+                                <span class="project-number">04</span>
+                                <i class="fas fa-eye fa-2x"></i>
                             </div>
                             <div class="project-info">
                                 <h3>智能对象识别系统</h3>
-                                <p>基于深度学习的多模式图像识别系统，集成PyTorch与TensorFlow/Keras，支持通用物体、数字、动物、场景四种识别模式。</p>
+                                <p>多模式图像识别系统，集成 PyTorch 与 TensorFlow，支持通用物体、数字、动物、场景四种识别模式。</p>
+                                <div class="project-tags">
+                                    <span class="project-tag">Python</span>
+                                    <span class="project-tag">YOLOv8</span>
+                                    <span class="project-tag">MobileNetV2</span>
+                                    <span class="project-tag">Flask</span>
+                                </div>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                    <a href="https://github.com/lucky-money-account/Intelligent-object-recognition" target="_blank" class="project-link">
+                                    <a href="https://github.com/lucky-money-account/Intelligent-object-recognition" target="_blank" class="project-link" style="background: linear-gradient(135deg, #22c55e, #14b8a6);">
                                         查看项目 <i class="fas fa-arrow-right"></i>
                                     </a>
                                 </div>
                             </div>
                         </div>
+
                     </div>
+                </div>
+            </div>
         </section>
 
         <!-- 联系部分 -->

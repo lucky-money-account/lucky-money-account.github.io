@@ -1,0 +1,46 @@
+# weather_sw hyperparameter configuration
+
+data:
+  mode: real                  # real (Open-Meteo API) | synthetic
+  cities:
+    Kunming:   { lat: 25.04, lon: 102.68, elev: 1892 }
+    Guiyang:   { lat: 26.58, lon: 106.73, elev: 1223 }
+    Chengdu:   { lat: 30.57, lon: 104.07, elev: 508 }
+    Chongqing: { lat: 29.57, lon: 106.55, elev: 260 }
+  start_date: "2010-01-01"
+  # end_date auto = today
+  features: [tavg, tmin, tmax, prcp, rhum, wspd, pres]   # + day_sin/day_cos auto-added
+  target: tavg
+
+window:
+  window_len: 30
+  horizon: 1
+
+split:
+  train_years_back: 3
+  val_years_back:   2
+  test_years_back:  1
+
+model:
+  name: bilstm               # bilstm | lstm2 | transformer | ensemble
+  input_dim: 9               # 7 weather + 2 time (day_sin, day_cos)
+  hidden_dim: 64
+  num_layers: 2
+  dropout: 0.2
+  nhead: 4
+  dim_feedforward: 128
+  d_model: 64
+
+train:
+  loss: mae                  # mae | mse
+  optimizer: adam
+  learning_rate: 0.0005       # lower LR for stability
+  weight_decay: 0.00001
+  batch_size: 64
+  epochs: 50                  # increased for better convergence
+  patience: 10                # LR scheduler patience
+  early_stop_patience: 20     # stop if no val improvement for N epochs
+  factor: 0.5
+  grad_clip_norm: 1.0
+  seed: 42
+  num_workers: 0

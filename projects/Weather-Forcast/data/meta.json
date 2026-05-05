@@ -1,0 +1,16 @@
+{
+  "last_fetch": "2026-05-05",
+  "last_end_date": "2026-05-05",
+  "total_days": 23876,
+  "cities": [
+    "Chengdu",
+    "Chongqing",
+    "Guiyang",
+    "Kunming"
+  ],
+  "date_range": [
+    "2010-01-01",
+    "2026-05-05"
+  ],
+  "updated_at": "2026-05-05T21:08:43.000597"
+}

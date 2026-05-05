@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Data (track metadata only)
+data/train.npz
+data/val.npz
+data/test.npz
+data/scalers.pkl
+data/all_raw.csv
+
+# Models
+checkpoints/*.pt
+
+# TensorBoard
+runs/
+
+# Plots (track for README badges)
+# plots/*.png
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Conda (keep project batch files)
+# *.bat

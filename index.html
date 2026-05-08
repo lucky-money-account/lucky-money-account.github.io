@@ -138,6 +138,47 @@
         }
         @keyframes shimmer { 0%,100% { background-position: -200% center; } 50% { background-position: 200% center; } }
 
+        .motto-line { text-align: center; margin-top: 16px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-dim); opacity: 0; animation: fadeSlideUp 0.6s 1s forwards; letter-spacing: 1px; }
+        .motto-line i { color: var(--cyan); margin: 0 8px; }
+
+        /* ── STATUS BANNER ── */
+        .status-banner {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 14px 24px;
+            display: flex; align-items: center; gap: 12px;
+            max-width: 600px; margin: -40px auto 60px;
+            position: relative; z-index: 2;
+        }
+        .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: statusPulse 2s ease-in-out infinite; }
+        @keyframes statusPulse { 0%,100% { opacity: 1; box-shadow: 0 0 8px var(--green); } 50% { opacity: 0.5; box-shadow: 0 0 20px var(--green); } }
+        .status-text { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 1.5px; color: var(--text); }
+        .status-text span { color: var(--cyan); }
+
+        /* ── TIMELINE ── */
+        .timeline { position: relative; padding: 0 0 0 40px; margin-left: 20px; }
+        .timeline::before {
+            content: ''; position: absolute; left: 18px; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(to bottom, var(--cyan), var(--purple), var(--pink));
+            opacity: 0.3;
+        }
+        .tl-item { position: relative; margin-bottom: 28px; padding-left: 28px; }
+        .tl-item::before {
+            content: ''; position: absolute; left: -23px; top: 6px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--bg-deep); border: 2px solid var(--cyan);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+            z-index: 1;
+        }
+        .tl-date { font-family: var(--font-mono); font-size: 0.75rem; color: var(--cyan); letter-spacing: 2px; margin-bottom: 4px; }
+        .tl-title { font-size: 1rem; font-weight: 600; margin-bottom: 2px; color: var(--text); }
+        .tl-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
+
+        @media (max-width: 768px) {
+            .timeline { margin-left: 0; padding-left: 30px; }
+            .timeline::before { left: 13px; }
+            .tl-item::before { left: -18px; width: 10px; height: 10px; }
+        }
+
         .typewriter { font-size: 1.1rem; color: var(--text-dim); min-height: 1.8em; margin-bottom: 28px; opacity: 0; animation: fadeSlideUp 0.6s 0.6s forwards; }
         .typewriter .cursor { display: inline-block; width: 2px; height: 1.2em; background: var(--cyan); margin-left: 4px; vertical-align: text-bottom; animation: blink 0.8s infinite; }
 
@@ -432,6 +473,7 @@
                 <ul class="nav-links">
                     <li><a href="#home" class="active">HOME</a></li>
                     <li><a href="#about">ABOUT</a></li>
+                    <li><a href="#timeline">TIMELINE</a></li>
                     <li><a href="#tools">TOOLS</a></li>
                     <li><a href="#skills">SKILLS</a></li>
                     <li><a href="#social">SOCIAL</a></li>
@@ -463,6 +505,7 @@
                         <a href="#projects" class="btn primary">查看项目 <i class="fas fa-chevron-right"></i></a>
                         <a href="#contact" class="btn">联系我 <i class="fas fa-paper-plane"></i></a>
                     </div>
+                    <p class="motto-line"><i class="fas fa-quote-left"></i> <span id="motto-text">Talk is cheap. Show me the code.</span> <i class="fas fa-quote-right"></i></p>
                 </div>
                 <div class="hero-image">
                     <div class="avatar-wrap">
@@ -474,6 +517,12 @@
                 </div>
             </div>
         </section>
+
+        <!-- STATUS BANNER -->
+        <div class="container"><div class="status-banner reveal">
+            <div class="status-dot"></div>
+            <span class="status-text"><span>&gt; CURRENT_STATUS:</span> 学习计算机视觉 (顺便完成大项目)</span>
+        </div></div>
 
         <!-- ABOUT -->
         <section id="about">
@@ -503,10 +552,44 @@
             </div>
         </section>
 
+        <!-- TIMELINE -->
+        <section id="timeline">
+            <div class="container">
+                <h2 class="section-title reveal"><span>02.</span> 学习路线</h2>
+                <div class="timeline">
+                    <div class="tl-item reveal">
+                        <div class="tl-date">2025.09</div>
+                        <div class="tl-title">考入电子科技大学软件学院</div>
+                        <div class="tl-desc">开始编程之旅，从零起步探索计算机世界。</div>
+                    </div>
+                    <div class="tl-item reveal">
+                        <div class="tl-date">2025.11</div>
+                        <div class="tl-title">开始接触机器学习</div>
+                        <div class="tl-desc">入门 ML 基础概念，了解监督学习与非监督学习。</div>
+                    </div>
+                    <div class="tl-item reveal">
+                        <div class="tl-date">2025.12</div>
+                        <div class="tl-title">开始接触计算机视觉</div>
+                        <div class="tl-desc">探索图像处理、OpenCV 以及视觉任务的初步实践。</div>
+                    </div>
+                    <div class="tl-item reveal">
+                        <div class="tl-date">2026.03</div>
+                        <div class="tl-title">系统学习深度学习 (PBLF)</div>
+                        <div class="tl-desc">以项目驱动方式深入学习 PyTorch、神经网络与模型训练。</div>
+                    </div>
+                    <div class="tl-item reveal">
+                        <div class="tl-date">2026.05</div>
+                        <div class="tl-title">完成多个实践项目</div>
+                        <div class="tl-desc">图像分类作业 + 西南地区天气深度学习预测 + 智能对象识别系统。</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- TOOLS -->
         <section id="tools">
             <div class="container">
-                <h2 class="section-title reveal"><span>02.</span> 我的工具</h2>
+                <h2 class="section-title reveal"><span>03.</span> 我的工具</h2>
                 <div class="cards-grid">
                     <div class="glass-card reveal">
                         <div class="tool-icon"><i class="fas fa-code"></i></div>
@@ -530,7 +613,7 @@
         <!-- SKILLS -->
         <section id="skills">
             <div class="container">
-                <h2 class="section-title reveal"><span>03.</span> 技能面板</h2>
+                <h2 class="section-title reveal"><span>04.</span> 技能面板</h2>
                 <div class="skill-bars reveal">
                     <div class="glass-card">
                         <div class="skill-bar-item">
@@ -575,13 +658,14 @@
         <!-- SOCIAL -->
         <section id="social">
             <div class="container">
-                <h2 class="section-title reveal"><span>04.</span> 扩列</h2>
+                <h2 class="section-title reveal"><span>05.</span> 扩列</h2>
                 <div class="social-grid">
                     <div class="social-card reveal">
                         <div class="social-icon-lg"><i class="fab fa-github" style="color:#fff;"></i></div>
                         <h3>GitHub</h3>
                         <p>代码仓库与开源项目。</p>
                         <a href="https://github.com/lucky-money-account" target="_blank" class="link-neon">访问主页 <i class="fas fa-arrow-right"></i></a>
+                        <img src="https://ghchart.rshah.org/lucky-money-account" alt="GitHub Contributions" style="width:100%;margin-top:14px;border-radius:6px;opacity:0.85;" loading="lazy">
                     </div>
                     <div class="social-card reveal">
                         <div class="social-icon-lg"><i class="fab fa-bilibili" style="color:#fb7299;"></i></div>
@@ -596,7 +680,7 @@
         <!-- HOBBIES -->
         <section id="hobbies">
             <div class="container">
-                <h2 class="section-title reveal"><span>05.</span> 兴趣爱好</h2>
+                <h2 class="section-title reveal"><span>06.</span> 兴趣爱好</h2>
                 <div class="hobby-grid">
                     <div class="hobby-card reveal">
                         <div class="hobby-icon" style="color:var(--cyan);"><i class="fas fa-code"></i></div>
@@ -625,7 +709,7 @@
         <!-- PROJECTS -->
         <section id="projects">
             <div class="container">
-                <h2 class="section-title reveal"><span>06.</span> 项目作业</h2>
+                <h2 class="section-title reveal"><span>07.</span> 项目作业</h2>
                 <div class="projects-grid">
                     <div class="proj-card reveal reveal-s1">
                         <div class="proj-header" style="background:linear-gradient(135deg,#a855f7,#6366f1);">
@@ -767,7 +851,7 @@
         <!-- CONTACT -->
         <section id="contact">
             <div class="container">
-                <h2 class="section-title reveal"><span>07.</span> 联系我</h2>
+                <h2 class="section-title reveal"><span>08.</span> 联系我</h2>
                 <div class="contact-grid">
                     <div class="reveal">
                         <p class="intro">如果你对我的项目感兴趣或有任何问题，随时联系！</p>
@@ -905,6 +989,25 @@
             setTimeout(type, delay);
         }
         setTimeout(type, 1000);
+
+        /* ═══════════════════════════ MOTTO CYCLING ═══════════════════════════ */
+        const mottos = [
+            'Talk is cheap. Show me the code.',
+            'Stay hungry, stay foolish.',
+            'Hello, World!',
+            'It works on my machine.',
+        ];
+        const mottoEl = document.getElementById('motto-text');
+        let mottoIdx = 0;
+        setInterval(() => {
+            mottoIdx = (mottoIdx + 1) % mottos.length;
+            mottoEl.style.opacity = '0';
+            setTimeout(() => {
+                mottoEl.textContent = mottos[mottoIdx];
+                mottoEl.style.opacity = '1';
+            }, 300);
+        }, 5000);
+        mottoEl.style.transition = 'opacity 0.3s';
 
         /* ═══════════════════════════ SCROLL REVEAL ═══════════════════════════ */
         const observer = new IntersectionObserver(

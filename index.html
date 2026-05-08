@@ -140,6 +140,16 @@
 
         .motto-line { text-align: center; margin-top: 16px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-dim); opacity: 0; animation: fadeSlideUp 0.6s 1s forwards; letter-spacing: 1px; }
         .motto-line i { color: var(--cyan); margin: 0 8px; }
+        .motto-terminal { position: relative; max-width: 650px; margin: 20px auto 0; background: rgba(0,8,2,0.88); border: 1px solid rgba(0,255,65,0.3); border-radius: 8px; overflow: hidden; box-shadow: 0 0 20px rgba(0,255,65,0.1),inset 0 0 30px rgba(0,0,0,0.5); opacity: 0; animation: fadeSlideUp 0.6s 1s forwards; }
+        .motto-terminal .mt-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(0,255,65,0.04); border-bottom: 1px solid rgba(0,255,65,0.15); font-family: var(--font-mono); font-size: 0.62rem; color: rgba(0,255,65,0.5); letter-spacing: 1px; }
+        .motto-terminal .mt-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .motto-terminal .mt-dot.r { background: #ff5f56; } .mt-dot.y { background: #ffbd2e; } .mt-dot.g { background: #27c93f; }
+        .motto-terminal .mt-display { position: relative; padding: 28px 24px; min-height: 90px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; overflow: hidden; }
+        .motto-terminal .mt-text { font-family: 'Courier New', monospace; font-size: 0.95rem; color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.5); position: relative; z-index: 2; line-height: 1.6; }
+        .motto-terminal .mt-cursor { display: inline-block; width: 10px; height: 1.1em; background: #00ff41; vertical-align: text-bottom; margin-left: 2px; animation: mtBlink 0.6s step-end infinite; box-shadow: 0 0 8px rgba(0,255,65,0.8); }
+        @keyframes mtBlink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+        .mt-rain { position: absolute; font-family: 'Courier New',monospace; color: rgba(0,255,65,0.12); font-size: 0.6rem; pointer-events: none; z-index: 1; white-space: nowrap; animation: mtRain linear infinite; }
+        @keyframes mtRain { 0% { transform: translateY(-100%); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(400px); opacity: 0; } }
 
         /* ── STATUS BANNER ── */
         .status-banner {
@@ -505,7 +515,16 @@
                         <a href="#projects" class="btn primary">查看项目 <i class="fas fa-chevron-right"></i></a>
                         <a href="#contact" class="btn">联系我 <i class="fas fa-paper-plane"></i></a>
                     </div>
-                    <p class="motto-line"><i class="fas fa-quote-left"></i> <span id="motto-text">Talk is cheap. Show me the code.</span> <i class="fas fa-quote-right"></i></p>
+                    <div class="motto-terminal reveal">
+                        <div class="mt-header">
+                            <span class="mt-dot r"></span><span class="mt-dot y"></span><span class="mt-dot g"></span>
+                            motto.sys — bash — 80×24
+                        </div>
+                        <div class="mt-display" id="mtDisplay">
+                            <span class="mt-text" id="mtText">Talk is cheap. Show me the code.</span>
+                            <span class="mt-cursor"></span>
+                        </div>
+                    </div>
                 </div>
                 <div class="hero-image">
                     <div class="avatar-wrap">
@@ -990,24 +1009,71 @@
         }
         setTimeout(type, 1000);
 
-        /* ═══════════════════════════ MOTTO CYCLING ═══════════════════════════ */
+        /* ═══════════════════════════ MOTTO TERMINAL ═══════════════════════════ */
         const mottos = [
             'Talk is cheap. Show me the code.',
             'Stay hungry, stay foolish.',
             'Hello, World!',
             'It works on my machine.',
+            'First, solve the problem. Then, write the code.',
+            'Move fast and break things.',
+            'There is no cloud. It\'s just someone else\'s computer.',
+            'Code is like humor. When you have to explain it, it\'s bad.',
+            'Any fool can write code a computer understands.',
+            'Make it work, make it right, make it fast.',
         ];
-        const mottoEl = document.getElementById('motto-text');
+        const mtText = document.getElementById('mtText');
         let mottoIdx = 0;
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?/';
+
+        function glitchTo(text, callback) {
+            const original = mtText.textContent;
+            const targetLen = text.length;
+            let iterations = 0;
+            const maxIter = 8;
+            function scramble() {
+                iterations++;
+                if (iterations >= maxIter) {
+                    mtText.textContent = text;
+                    if (callback) callback();
+                    return;
+                }
+                let scrambled = '';
+                const revealRatio = iterations / maxIter;
+                for (let i = 0; i < targetLen; i++) {
+                    if (i < Math.floor(revealRatio * targetLen)) {
+                        scrambled += text[i];
+                    } else {
+                        scrambled += chars[Math.floor(Math.random() * chars.length)];
+                    }
+                }
+                mtText.textContent = scrambled;
+                setTimeout(scramble, 50 + iterations * 10);
+            }
+            scramble();
+        }
+
         setInterval(() => {
             mottoIdx = (mottoIdx + 1) % mottos.length;
-            mottoEl.style.opacity = '0';
-            setTimeout(() => {
-                mottoEl.textContent = mottos[mottoIdx];
-                mottoEl.style.opacity = '1';
-            }, 300);
+            glitchTo(mottos[mottoIdx]);
         }, 5000);
-        mottoEl.style.transition = 'opacity 0.3s';
+
+        /* ═══════════════════════════ BINARY RAIN GENERATOR ═══════════════════════ */
+        const mtDisplay = document.getElementById('mtDisplay');
+        function spawnRain() {
+            const span = document.createElement('span');
+            span.className = 'mt-rain';
+            span.style.left = Math.random() * 90 + '%';
+            span.style.animationDuration = (Math.random() * 4 + 3) + 's';
+            span.style.animationDelay = Math.random() * 3 + 's';
+            let rain = '';
+            for (let i = 0; i < 12; i++) rain += Math.random() > 0.5 ? '0' : '1';
+            rain += '\n' + rain + '\n' + rain;
+            span.textContent = rain;
+            mtDisplay.appendChild(span);
+            setTimeout(() => { span.remove(); }, 7000);
+        }
+        setInterval(spawnRain, 400);
 
         /* ═══════════════════════════ SCROLL REVEAL ═══════════════════════════ */
         const observer = new IntersectionObserver(

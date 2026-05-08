@@ -153,11 +153,12 @@
 
         /* ── STATUS BANNER ── */
         .status-banner {
+            margin-top: 20px;
             background: var(--bg-surface); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 14px 24px;
-            display: flex; align-items: center; gap: 12px;
-            max-width: 600px; margin: -40px auto 60px;
-            position: relative; z-index: 2;
+            border-radius: 8px; padding: 10px 16px;
+            display: flex; align-items: center; gap: 10px;
+            font-family: var(--font-mono); font-size: 0.68rem;
+            letter-spacing: 1px; color: var(--text);
         }
         .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: statusPulse 2s ease-in-out infinite; }
         @keyframes statusPulse { 0%,100% { opacity: 1; box-shadow: 0 0 8px var(--green); } 50% { opacity: 0.5; box-shadow: 0 0 20px var(--green); } }
@@ -533,15 +534,13 @@
                         <div class="orbit-ring"></div>
                         <img src="avatar.jpg" alt="Avatar">
                     </div>
+                    <div class="status-banner">
+                        <div class="status-dot"></div>
+                        <span class="status-text"><span>&gt; CURRENT_STATUS:</span> 学习计算机视觉 (顺便完成大项目)</span>
+                    </div>
                 </div>
             </div>
         </section>
-
-        <!-- STATUS BANNER -->
-        <div class="container"><div class="status-banner reveal">
-            <div class="status-dot"></div>
-            <span class="status-text"><span>&gt; CURRENT_STATUS:</span> 学习计算机视觉 (顺便完成大项目)</span>
-        </div></div>
 
         <!-- ABOUT -->
         <section id="about">

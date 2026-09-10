@@ -256,15 +256,27 @@
             to   { transform: scale(1.7);  opacity: 0; }
         }
         .click-ripple {
-            position: fixed; width: 46px; height: 46px; margin: -23px 0 0 -23px;
-            border-radius: 50%; border: 1px solid rgba(0, 229, 255, 0.5);
-            box-shadow: 0 0 12px rgba(0, 229, 255, 0.22);
+            position: fixed; width: 56px; height: 56px; margin: -28px 0 0 -28px;
+            border-radius: 50%; border: 1.5px solid rgba(0, 229, 255, 0.9);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.6), inset 0 0 14px rgba(0, 229, 255, 0.35);
             pointer-events: none; z-index: 9999;
-            animation: clickRipple 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+            animation: clickRipple 0.66s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
         }
         @keyframes clickRipple {
-            from { transform: scale(0.15); opacity: 0.9; }
-            to   { transform: scale(1.35); opacity: 0; }
+            from { transform: scale(0.1); opacity: 1; }
+            to   { transform: scale(1.55); opacity: 0; }
+        }
+        .click-burst { position: fixed; width: 0; height: 0; pointer-events: none; z-index: 10000; }
+        .click-bit {
+            position: absolute; left: 0; top: 0;
+            font-family: var(--font-mono), monospace; font-weight: 700; line-height: 1;
+            opacity: 0; will-change: transform, opacity;
+            animation: bitFly 0.75s cubic-bezier(0.15, 0.75, 0.35, 1) forwards;
+        }
+        @keyframes bitFly {
+            0%   { transform: translate(-50%, -50%) scale(0.35); opacity: 0; }
+            22%  { opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.05); opacity: 0; }
         }
         @keyframes avatarReveal {
             from { clip-path: circle(0% at 50% 50%); opacity: 0; }
@@ -1362,9 +1374,10 @@
             const frame = document.getElementById('avatarFrame');
             const wrap = document.querySelector('.avatar-wrap');
             if (frame) {
-                frame.addEventListener('click', () => {
+                frame.addEventListener('click', (e) => {
                     advance();
                     restart();
+                    spawnClickFX(e.clientX, e.clientY);
                     fx.classList.remove('glitch');
                     void fx.offsetWidth;              // 强制重排以重启动画
                     fx.classList.add('glitch');
@@ -1379,16 +1392,45 @@
             }
         })();
 
-        /* ═══════════════════════════ PAGE CLICK RIPPLE ═══════════════════════════ */
+        /* ═══════════════════════════ CLICK FX: neon ring + 0/1 burst ═══════════════════════════ */
+        function spawnClickFX(x, y) {
+            const ring = document.createElement('div');
+            ring.className = 'click-ripple';
+            ring.style.left = x + 'px';
+            ring.style.top = y + 'px';
+            document.body.appendChild(ring);
+            setTimeout(() => ring.remove(), 720);
+
+            const burst = document.createElement('div');
+            burst.className = 'click-burst';
+            burst.style.left = x + 'px';
+            burst.style.top = y + 'px';
+            const n = 12;
+            for (let i = 0; i < n; i++) {
+                const bit = document.createElement('span');
+                bit.className = 'click-bit';
+                bit.textContent = Math.random() < 0.5 ? '0' : '1';
+                const cyan = Math.random() < 0.7;
+                bit.style.color = cyan ? '#00e5ff' : '#00e676';
+                bit.style.textShadow = cyan
+                    ? '0 0 8px rgba(0,229,255,.95), 0 0 18px rgba(0,229,255,.5)'
+                    : '0 0 8px rgba(0,230,118,.95), 0 0 18px rgba(0,230,118,.5)';
+                const ang = (Math.PI * 2 * i) / n + (Math.random() - 0.5) * 0.6;
+                const dist = 46 + Math.random() * 48;
+                bit.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(1) + 'px');
+                bit.style.setProperty('--dy', (Math.sin(ang) * dist).toFixed(1) + 'px');
+                bit.style.animationDelay = (Math.random() * 0.09).toFixed(2) + 's';
+                bit.style.fontSize = (11 + Math.random() * 5).toFixed(0) + 'px';
+                burst.appendChild(bit);
+            }
+            document.body.appendChild(burst);
+            setTimeout(() => burst.remove(), 980);
+        }
+
         document.addEventListener('click', (e) => {
             const t = e.target;
             if (t.closest('a, button, input, textarea, select, .avatar-frame')) return;
-            const r = document.createElement('div');
-            r.className = 'click-ripple';
-            r.style.left = e.clientX + 'px';
-            r.style.top = e.clientY + 'px';
-            document.body.appendChild(r);
-            setTimeout(() => r.remove(), 660);
+            spawnClickFX(e.clientX, e.clientY);
         });
 
     </script>

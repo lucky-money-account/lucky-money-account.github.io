@@ -544,57 +544,88 @@
                         <div class="orbit-ring"></div>
                         <div class="orbit-ring"></div>
                         <div class="orbit-ring"></div>
-                                                <svg class="avatar-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Avatar">
+                                                                        <svg class="avatar-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Avatar">
+                            <style>
+                            .avd-draw{stroke:url(#avdNeon);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:avdDraw 1.5s cubic-bezier(.65,0,.35,1) forwards;}
+                            .avd-thin{stroke:url(#avdNeon);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:avdDraw 1.3s ease forwards;}
+                            .avd-shape{fill-opacity:0;animation:avdFill 1s ease forwards;}
+                            .avd-dot{opacity:0;animation:avdFill .6s ease forwards;}
+                            @keyframes avdDraw{to{stroke-dashoffset:0;}}
+                            @keyframes avdFill{to{fill-opacity:1;opacity:1;}}
+                            </style>
                             <defs>
-                                <clipPath id="avClip"><circle cx="120" cy="120" r="119"/></clipPath>
-                                <radialGradient id="avBg" cx="50%" cy="36%" r="78%">
-                                    <stop offset="0%" stop-color="#0d1836"/>
-                                    <stop offset="100%" stop-color="#050914"/>
-                                </radialGradient>
-                                <filter id="avGlow" x="-40%" y="-40%" width="180%" height="180%">
-                                    <feGaussianBlur stdDeviation="2.2" result="b"/>
-                                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                </filter>
+                            <clipPath id="avdClip"><circle cx="120" cy="120" r="119"/></clipPath>
+                            <radialGradient id="avdBg" cx="50%" cy="34%" r="82%"><stop offset="0%" stop-color="#14213f"/><stop offset="100%" stop-color="#050914"/></radialGradient>
+                            <radialGradient id="avdHalo" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(0,229,255,0.22)"/><stop offset="60%" stop-color="rgba(90,80,255,0.08)"/><stop offset="100%" stop-color="rgba(0,229,255,0)"/></radialGradient>
+                            <radialGradient id="avdFace" cx="36%" cy="28%" r="88%"><stop offset="0%" stop-color="#4a63a0"/><stop offset="55%" stop-color="#26395f"/><stop offset="100%" stop-color="#111d36"/></radialGradient>
+                            <linearGradient id="avdHair" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#22345c"/><stop offset="100%" stop-color="#0a1326"/></linearGradient>
+                            <linearGradient id="avdHood" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e3160"/><stop offset="100%" stop-color="#0a1326"/></linearGradient>
+                            <linearGradient id="avdNeon" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#00e5ff"/><stop offset="52%" stop-color="#4f8cff"/><stop offset="100%" stop-color="#b44aff"/></linearGradient>
+                            <filter id="avdGlow" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="2.3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                             </defs>
-                            <g clip-path="url(#avClip)">
-                                <rect width="240" height="240" fill="url(#avBg)"/>
-                                <g stroke="rgba(0,229,255,0.06)" stroke-width="1">
-                                    <line x1="0" y1="60" x2="240" y2="60"/><line x1="0" y1="120" x2="240" y2="120"/><line x1="0" y1="180" x2="240" y2="180"/>
-                                    <line x1="60" y1="0" x2="60" y2="240"/><line x1="120" y1="0" x2="120" y2="240"/><line x1="180" y1="0" x2="180" y2="240"/>
-                                </g>
-                                <circle cx="120" cy="120" r="98" fill="none" stroke="rgba(0,229,255,0.10)" stroke-width="1"/>
-                                <g stroke="rgba(0,229,255,0.5)" stroke-width="1.5" stroke-linecap="round">
-                                    <path d="M46 52 v10 M41 57 h10"/>
-                                    <path d="M196 74 v8 M192 78 h8"/>
-                                    <path d="M188 176 v8 M184 180 h8"/>
-                                </g>
-                                <g filter="url(#avGlow)">
-                                    <path class="draw" pathLength="1" style="animation-delay:0s" d="M90 98 C90 64 100 54 120 54 C140 54 150 64 150 98 L150 116 C150 146 138 162 120 169 C102 162 90 146 90 116 Z"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:.15s" d="M88 94 C86 60 102 48 120 48 C140 48 154 60 152 92"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:.3s" d="M100 58 C112 50 132 50 144 60"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:.4s" d="M90 108 C82 106 82 120 90 122"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:.4s" d="M150 108 C158 106 158 120 150 122"/>
-                                    <path class="draw purple" pathLength="1" style="animation-delay:.5s" d="M98 106 a9 7 0 1 0 18 0 a9 7 0 1 0 -18 0"/>
-                                    <path class="draw purple" pathLength="1" style="animation-delay:.6s" d="M124 106 a9 7 0 1 0 18 0 a9 7 0 1 0 -18 0"/>
-                                    <path class="draw purple" pathLength="1" style="animation-delay:.7s" d="M116 106 h8"/>
-                                    <path class="draw purple" pathLength="1" style="animation-delay:.7s" d="M98 106 h-6"/>
-                                    <path class="draw purple" pathLength="1" style="animation-delay:.7s" d="M142 106 h6"/>
-                                    <circle class="dot" cx="107" cy="106" r="2.4" fill="#00e5ff" style="animation-delay:.85s"/>
-                                    <circle class="dot" cx="133" cy="106" r="2.4" fill="#00e5ff" style="animation-delay:.85s"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:.9s" d="M120 119 C118 125 117 127 121 129"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:1s" d="M112 138 C117 144 123 144 128 138"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:1.1s" d="M110 168 L110 179"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:1.1s" d="M130 168 L130 179"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:1.2s" d="M72 236 C76 196 94 184 110 180 L130 180 C146 184 164 196 168 236"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:1.35s" d="M110 180 C116 189 124 189 130 180"/>
-                                    <path class="draw" pathLength="1" style="animation-delay:1.5s" d="M120 198 L108 208 M120 198 L132 208 M120 198 L120 220 M108 208 L120 220 M132 208 L120 220"/>
-                                    <circle class="dot" cx="120" cy="198" r="2.6" fill="#b44aff" style="animation-delay:1.7s"/>
-                                    <circle class="dot" cx="108" cy="208" r="2.6" fill="#b44aff" style="animation-delay:1.75s"/>
-                                    <circle class="dot" cx="132" cy="208" r="2.6" fill="#b44aff" style="animation-delay:1.8s"/>
-                                    <circle class="dot" cx="120" cy="220" r="2.6" fill="#b44aff" style="animation-delay:1.85s"/>
-                                </g>
+                            <g clip-path="url(#avdClip)">
+                            <rect width="240" height="240" fill="url(#avdBg)"/>
+                            <g stroke="rgba(0,229,255,0.055)" stroke-width="1">
+                            <line x1="0" y1="60" x2="240" y2="60"/><line x1="0" y1="120" x2="240" y2="120"/><line x1="0" y1="180" x2="240" y2="180"/>
+                            <line x1="60" y1="0" x2="60" y2="240"/><line x1="120" y1="0" x2="120" y2="240"/><line x1="180" y1="0" x2="180" y2="240"/>
                             </g>
-                        </svg>
+                            <circle cx="120" cy="96" r="76" fill="url(#avdHalo)"/>
+                            <g stroke="rgba(0,229,255,0.22)" stroke-width="1" fill="none">
+                            <path d="M16 46 h24 l10 -10 h20"/><circle cx="70" cy="36" r="2" fill="rgba(0,229,255,0.4)" stroke="none"/>
+                            <path d="M224 194 h-22 l-10 10 h-16"/><circle cx="176" cy="204" r="2" fill="rgba(180,74,255,0.5)" stroke="none"/>
+                            </g>
+                            <g stroke="rgba(0,229,255,0.5)" stroke-width="1.4" stroke-linecap="round">
+                            <path d="M42 60 v10 M37 65 h10"/><path d="M198 74 v8 M194 78 h8"/><path d="M196 168 v8 M192 172 h8"/>
+                            </g>
+                            <g filter="url(#avdGlow)">
+                            <!-- neck -->
+                            <path class="avd-shape" style="animation-delay:.1s" fill="url(#avdFace)" d="M110 132 h20 v30 h-20 z"/>
+                            <!-- face -->
+                            <path class="avd-draw avd-shape" pathLength="1" style="animation-delay:.2s" fill="url(#avdFace)" d="M89 100 C88 68 100 54 120 54 C140 54 152 68 151 100 C150 114 146 126 136 133 C130 137 125 139 120 139 C115 139 110 137 104 133 C94 126 90 114 89 100 Z"/>
+                            <!-- chin/jaw shadow -->
+                            <path class="avd-thin" pathLength="1" style="animation-delay:1.1s" fill="none" d="M104 133 C110 138 130 138 136 133" opacity="0.5"/>
+                            <!-- ears -->
+                            <path class="avd-draw" pathLength="1" style="animation-delay:.4s" fill="none" d="M89 100 C82 98 81 112 89 114"/>
+                            <path class="avd-draw" pathLength="1" style="animation-delay:.4s" fill="none" d="M151 100 C158 98 159 112 151 114"/>
+                            <!-- hair -->
+                            <path class="avd-draw avd-shape" pathLength="1" style="animation-delay:.5s" fill="url(#avdHair)" d="M84 102 C80 64 100 46 120 46 C142 46 161 64 156 102 C152 86 146 76 136 72 C126 68 110 70 100 78 C93 84 88 92 84 102 Z"/>
+                            <path class="avd-thin" pathLength="1" style="animation-delay:1.0s" fill="none" d="M104 62 C112 55 128 55 138 63"/>
+                            <path class="avd-thin" pathLength="1" style="animation-delay:1.05s" fill="none" d="M96 78 C104 68 116 64 128 66"/>
+                            <!-- eyebrows -->
+                            <path class="avd-draw" pathLength="1" style="animation-delay:.7s" fill="none" d="M99 84 Q107 80 115 84"/>
+                            <path class="avd-draw" pathLength="1" style="animation-delay:.7s" fill="none" d="M125 84 Q133 80 141 84"/>
+                            <!-- glasses -->
+                            <circle class="avd-draw" pathLength="1" style="animation-delay:.8s" cx="107" cy="96" r="11" fill="none"/>
+                            <circle class="avd-draw" pathLength="1" style="animation-delay:.9s" cx="133" cy="96" r="11" fill="none"/>
+                            <path class="avd-draw" pathLength="1" style="animation-delay:1s" fill="none" d="M118 96 h4"/>
+                            <path class="avd-draw" pathLength="1" style="animation-delay:1s" fill="none" d="M96 96 h-5"/>
+                            <path class="avd-draw" pathLength="1" style="animation-delay:1s" fill="none" d="M144 96 h5"/>
+                            <path class="avd-thin" pathLength="1" style="animation-delay:1.15s" fill="none" d="M100 90 q4 -4 8 -3"/>
+                            <path class="avd-thin" pathLength="1" style="animation-delay:1.15s" fill="none" d="M126 90 q4 -4 8 -3"/>
+                            <!-- eyes -->
+                            <circle class="avd-dot" cx="107" cy="96" r="2.5" fill="#9af7ff" style="animation-delay:1.05s"/>
+                            <circle class="avd-dot" cx="133" cy="96" r="2.5" fill="#9af7ff" style="animation-delay:1.05s"/>
+                            <!-- nose -->
+                            <path class="avd-draw" pathLength="1" style="animation-delay:1.1s" fill="none" d="M120 100 C118 106 117 108 121 109"/>
+                            <!-- mouth -->
+                            <path class="avd-draw" pathLength="1" style="animation-delay:1.15s" fill="none" d="M113 119 Q120 125 127 119"/>
+                            <!-- shoulders / hoodie -->
+                            <path class="avd-draw avd-shape" pathLength="1" style="animation-delay:1.2s" fill="url(#avdHood)" d="M58 240 C62 190 86 164 108 156 L132 156 C154 164 178 190 182 240 Z"/>
+                            <path class="avd-draw" pathLength="1" style="animation-delay:1.4s" fill="none" d="M108 156 C114 168 126 168 132 156"/>
+                            <!-- drawstrings -->
+                            <path class="avd-thin" pathLength="1" style="animation-delay:1.5s" fill="none" d="M116 163 L114 185"/>
+                            <path class="avd-thin" pathLength="1" style="animation-delay:1.5s" fill="none" d="M124 163 L126 185"/>
+                            <circle class="avd-dot" cx="114" cy="187" r="2" fill="#00e5ff" style="animation-delay:1.7s"/>
+                            <circle class="avd-dot" cx="126" cy="187" r="2" fill="#00e5ff" style="animation-delay:1.7s"/>
+                            <!-- chest emblem -->
+                            <path class="avd-thin" pathLength="1" style="animation-delay:1.6s" fill="none" d="M120 205 L112 213 M120 205 L128 213 M112 213 L120 221 M128 213 L120 221 M120 205 L120 221"/>
+                            <circle class="avd-dot" cx="120" cy="205" r="2.2" fill="#b44aff" style="animation-delay:1.8s"/>
+                            <circle class="avd-dot" cx="112" cy="213" r="2.2" fill="#b44aff" style="animation-delay:1.82s"/>
+                            <circle class="avd-dot" cx="128" cy="213" r="2.2" fill="#b44aff" style="animation-delay:1.84s"/>
+                            <circle class="avd-dot" cx="120" cy="221" r="2.2" fill="#b44aff" style="animation-delay:1.86s"/>
+                            </g>
+                            </g>
+                            </svg>
                     </div>
                     <div class="status-banner">
                         <div class="status-dot"></div>

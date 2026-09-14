@@ -400,6 +400,10 @@
         .detect-corner.br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
         @keyframes detectPulse { 0%,100% { border-color: rgba(255,255,255,0.3); } 50% { border-color: rgba(255,255,255,0.9); } }
         @keyframes cornerFlash { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+        /* Preview: GAN pixel generation (card 8) */
+        .preview-gan { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; width: 54px; height: 54px; }
+        .gan-px { background: rgba(255,255,255,0.92); border-radius: 1px; animation: ganPop 2.4s steps(1) infinite; }
+        @keyframes ganPop { 0% { opacity: 0.12; } 45% { opacity: 0.95; } 100% { opacity: 0.12; } }
         .proj-body { padding: 20px 22px 22px; }
         .proj-body h3 { font-family: var(--font-mono); font-size: 0.95rem; letter-spacing: 1px; margin-bottom: 6px; color: var(--text); }
         .proj-body > p { color: var(--text-dim); font-size: 0.84rem; margin-bottom: 12px; line-height: 1.5; }
@@ -625,7 +629,7 @@
                             <div class="stat-label">年开发经验</div>
                         </div>
                         <div class="stat-panel">
-                            <div class="stat-value" data-target="7">0</div>
+                            <div class="stat-value" data-target="8">0</div>
                             <div class="stat-label">完成项目</div>
                         </div>
                         <div class="stat-panel">
@@ -992,6 +996,50 @@
                                 <span class="proj-tag">GAN</span>
                             </div>
                             <a href="https://github.com/lucky-money-account/repository_for_machine_learning" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#b44aff,#ff2d75);">查看项目 <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <!-- Project 08: Kaggle DCGAN -->
+                    <div class="proj-card reveal reveal-s5">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#f43f5e,#8b5cf6);">
+                            <span class="proj-num">08</span>
+                            <i class="fas fa-paw fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-gan">
+                                        <span class="gan-px" style="animation-delay:0.00s"></span>
+                                        <span class="gan-px" style="animation-delay:0.12s"></span>
+                                        <span class="gan-px" style="animation-delay:0.24s"></span>
+                                        <span class="gan-px" style="animation-delay:0.36s"></span>
+                                        <span class="gan-px" style="animation-delay:0.48s"></span>
+                                        <span class="gan-px" style="animation-delay:0.60s"></span>
+                                        <span class="gan-px" style="animation-delay:0.72s"></span>
+                                        <span class="gan-px" style="animation-delay:0.84s"></span>
+                                        <span class="gan-px" style="animation-delay:0.96s"></span>
+                                        <span class="gan-px" style="animation-delay:1.08s"></span>
+                                        <span class="gan-px" style="animation-delay:1.20s"></span>
+                                        <span class="gan-px" style="animation-delay:1.32s"></span>
+                                        <span class="gan-px" style="animation-delay:1.44s"></span>
+                                        <span class="gan-px" style="animation-delay:1.56s"></span>
+                                        <span class="gan-px" style="animation-delay:1.68s"></span>
+                                        <span class="gan-px" style="animation-delay:1.80s"></span>
+                                </div>
+                                <span class="preview-label">GENERATING_DOGS</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>Kaggle DCGAN · 生成狗图</h3>
+                            <p>从零实现 DCGAN 生成 64×64 狗图，自建 FID / MiFID 评估体系；通过标签平滑、判别器谱归一化等调参，把 FID 从 433 降到 91.2，并完整记录 5 轮迭代的失败与修正。</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">Python</span>
+                                <span class="proj-tag">PyTorch</span>
+                                <span class="proj-tag">DCGAN</span>
+                                <span class="proj-tag">FID / MiFID</span>
+                                <span class="proj-tag">谱归一化</span>
+                                <span class="proj-tag">Jupyter Notebook</span>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/Kagglebranch" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#f43f5e,#8b5cf6);">查看项目 <i class="fas fa-arrow-right"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/Kagglebranch/PROGRESS.md" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#f43f5e,#8b5cf6);">迭代记录 <i class="fas fa-book"></i></a>
+                            </div>
                         </div>
                     </div>
                 </div>

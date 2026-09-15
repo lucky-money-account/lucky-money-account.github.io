@@ -184,23 +184,33 @@
         .tl-title { font-size: 1rem; font-weight: 600; margin-bottom: 2px; color: var(--text); }
         .tl-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
 
-        /* ── TIMELINE: 并行分支（GAN） ── */
-        .tl-fork { position: relative; margin: 0 0 10px 0; padding-left: 34px; }
-        .tl-fork::after {
-            content: ''; position: absolute; left: -22px; top: -34px;
-            width: 40px; height: 34px;
-            border-left: 2px solid var(--pink);
-            border-bottom: 2px solid var(--pink);
-            border-bottom-left-radius: 18px;
-            opacity: 0.65;
+        /* ── TIMELINE: 分叉（从头学习 ⇄ GAN 研究，两条并行轨） ── */
+        .tl-fork-wrap {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            column-gap: 32px;
+            padding-top: 34px;
         }
-        .tl-fork::before {
-            content: ''; position: absolute; left: 18px; top: 0; bottom: 16px;
+        .tl-fork-wrap::after {              /* 分叉连线：主线 → GAN 轨 */
+            content: ''; position: absolute;
+            left: -22px; top: 12px;
+            width: calc(50% + 38px); height: 22px;
+            border-top: 2px solid var(--pink);
+            border-right: 2px solid var(--pink);
+            border-top-right-radius: 16px;
+            opacity: 0.6;
+        }
+        .tl-fork-col--gan { position: relative; }
+        .tl-fork-col--gan::before {         /* GAN 轨竖线 */
+            content: ''; position: absolute;
+            left: 0; top: 0; bottom: 0;
             width: 2px; background: linear-gradient(to bottom, var(--pink), var(--purple));
             opacity: 0.45;
         }
         .tl-fork-head {
             display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            padding-left: 26px;
             font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 1px;
             color: var(--pink); margin-bottom: 16px;
         }
@@ -214,10 +224,10 @@
             transition: all 0.3s;
         }
         .tl-fork-link:hover { border-color: var(--pink); box-shadow: 0 0 12px rgba(255, 45, 117, 0.25); }
-        .tl-fork-item { position: relative; margin-bottom: 20px; }
+        .tl-fork-item { position: relative; padding-left: 26px; margin-bottom: 20px; }
         .tl-fork-item:last-child { margin-bottom: 0; }
         .tl-fork-item::before {
-            content: ''; position: absolute; left: -22px; top: 5px;
+            content: ''; position: absolute; left: -5px; top: 5px;
             width: 9px; height: 9px; border-radius: 50%;
             background: var(--bg-deep); border: 2px solid var(--pink);
             box-shadow: 0 0 8px rgba(255, 45, 117, 0.45);
@@ -229,10 +239,19 @@
             .timeline { margin-left: 0; padding-left: 30px; }
             .timeline::before { left: 13px; }
             .tl-item::before { left: -18px; width: 10px; height: 10px; }
-            .tl-fork { padding-left: 24px; }
-            .tl-fork::after { left: -17px; width: 30px; height: 26px; }
-            .tl-fork::before { left: 13px; }
-            .tl-fork-item::before { left: -16px; width: 8px; height: 8px; }
+            .tl-fork-wrap { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: 0; }
+            .tl-fork-wrap::after { display: none; }
+            .tl-fork-col--gan { margin-left: 24px; }
+            .tl-fork-col--gan::after {      /* 窄屏改为上下堆叠，用肘形连线衔接 */
+                content: ''; position: absolute;
+                left: -41px; top: -24px;
+                width: 41px; height: 24px;
+                border-left: 2px solid var(--pink);
+                border-bottom: 2px solid var(--pink);
+                border-bottom-left-radius: 16px;
+                opacity: 0.6;
+            }
+            .tl-fork-item::before { width: 8px; height: 8px; }
         }
 
         .typewriter { font-size: 1.1rem; color: var(--text-dim); min-height: 1.8em; margin-bottom: 28px; opacity: 0; animation: fadeSlideUp 0.6s 0.6s forwards; }
@@ -716,39 +735,42 @@
                         <div class="tl-title">完成多个实践项目</div>
                         <div class="tl-desc">图像分类作业 + 西南地区天气深度学习预测 + 智能对象识别系统。</div>
                     </div>
-                    <div class="tl-item reveal">
-                        <div class="tl-date">2026.08</div>
-                        <div class="tl-title">重头重新学习深度学习基础理论</div>
-                        <div class="tl-desc">回归基础，从头系统梳理深度学习理论知识，夯实根基。</div>
-                    </div>
-
-                    <!-- 并行分支：GAN 研究 -->
-                    <div class="tl-fork reveal">
-                        <div class="tl-fork-head">
-                            <i class="fas fa-code-branch"></i>
-                            <span>并行分支 · GAN 研究</span>
-                            <em>与基础理论学习同步推进</em>
-                            <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-research" target="_blank" class="tl-fork-link">查看专栏 <i class="fas fa-arrow-right"></i></a>
+                    <!-- 分叉点：此后分为「从头学习」与「GAN 研究」两条并行轨 -->
+                    <div class="tl-fork-wrap reveal">
+                        <div class="tl-fork-col tl-fork-col--main">
+                            <div class="tl-item">
+                                <div class="tl-date">2026.08</div>
+                                <div class="tl-title">重头重新学习深度学习基础理论</div>
+                                <div class="tl-desc">回归基础，从头系统梳理深度学习理论知识，夯实根基。</div>
+                            </div>
                         </div>
-                        <div class="tl-fork-item">
-                            <div class="tl-date">2026.09</div>
-                            <div class="tl-title">开启 GAN 研究专栏</div>
-                            <div class="tl-desc">从 DCGAN 起步，建立「母分支 + 一项目一分支」的研究体系，配套自实现评估与迭代记录。</div>
-                        </div>
-                        <div class="tl-fork-item">
-                            <div class="tl-date">2026.09</div>
-                            <div class="tl-title">DCGAN · 动漫头像生成</div>
-                            <div class="tl-desc">用 Kaggle 动漫人脸数据集（63,565 张）训练 DCGAN，从 100 维噪声生成 64×64 动漫风格头像。</div>
-                        </div>
-                        <div class="tl-fork-item">
-                            <div class="tl-date">2026.09</div>
-                            <div class="tl-title">DCGAN · 狗图生成 + FID 评估</div>
-                            <div class="tl-desc">自建 FID / MiFID / KID / IS / Precision-Recall 评估体系，靠标签平滑与判别器谱归一化把 FID 从 433 降到 91.2。</div>
-                        </div>
-                        <div class="tl-fork-item">
-                            <div class="tl-date">进行中</div>
-                            <div class="tl-title">路线图 · WGAN / CGAN / 潜空间探索</div>
-                            <div class="tl-desc">下一步：WGAN-GP 改善训练稳定性、CGAN 条件生成、潜空间插值，以及高分辨率生成思路。</div>
+                        <div class="tl-fork-col tl-fork-col--gan">
+                            <div class="tl-fork-head">
+                                <i class="fas fa-code-branch"></i>
+                                <span>并行分支 · GAN 研究</span>
+                                <em>与基础理论学习同步推进</em>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-research" target="_blank" class="tl-fork-link">查看专栏 <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">2026.09</div>
+                                <div class="tl-title">开启 GAN 研究专栏</div>
+                                <div class="tl-desc">从 DCGAN 起步，建立「母分支 + 一项目一分支」的研究体系，配套自实现评估与迭代记录。</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">2026.09</div>
+                                <div class="tl-title">DCGAN · 动漫头像生成</div>
+                                <div class="tl-desc">用 Kaggle 动漫人脸数据集（63,565 张）训练 DCGAN，从 100 维噪声生成 64×64 动漫风格头像。</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">2026.09</div>
+                                <div class="tl-title">DCGAN · 狗图生成 + FID 评估</div>
+                                <div class="tl-desc">自建 FID / MiFID / KID / IS / Precision-Recall 评估体系，靠标签平滑与判别器谱归一化把 FID 从 433 降到 91.2。</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">进行中</div>
+                                <div class="tl-title">路线图 · WGAN / CGAN / 潜空间探索</div>
+                                <div class="tl-desc">下一步：WGAN-GP 改善训练稳定性、CGAN 条件生成、潜空间插值，以及高分辨率生成思路。</div>
+                            </div>
                         </div>
                     </div>
                 </div>

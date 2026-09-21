@@ -767,6 +767,11 @@
                                 <div class="tl-desc">自建 FID / MiFID / KID / IS / Precision-Recall 评估体系，靠标签平滑与判别器谱归一化把 FID 从 433 降到 91.2。</div>
                             </div>
                             <div class="tl-fork-item">
+                                <div class="tl-date">2026.09</div>
+                                <div class="tl-title">CycleGAN · 黑发 ⇄ 金发图像翻译</div>
+                                <div class="tl-desc">非配对图像翻译：把 CelebA 按发色拆成黑发 / 金发两个域（78,449 张），靠循环一致约束学习双向映射，无需成对数据。模型与数据流水线已验证，正在训练调参。</div>
+                            </div>
+                            <div class="tl-fork-item">
                                 <div class="tl-date">进行中</div>
                                 <div class="tl-title">路线图 · WGAN / CGAN / 潜空间探索</div>
                                 <div class="tl-desc">下一步：WGAN-GP 改善训练稳定性、CGAN 条件生成、潜空间插值，以及高分辨率生成思路。</div>
@@ -1124,10 +1129,11 @@
                         </div>
                         <div class="proj-body">
                             <h3>GAN 研究专栏</h3>
-                            <p>生成对抗网络系列研究：每个课题从母分支切出独立分支，配套自实现的评估体系与迭代记录。目前收录 DCGAN 动漫头像生成、DCGAN 狗图生成（FID 433 → 91.2）。</p>
+                            <p>生成对抗网络系列研究：每个课题从母分支切出独立分支，配套自实现的评估体系与迭代记录。目前收录 DCGAN 动漫头像生成、DCGAN 狗图生成（FID 433 → 91.2）、CycleGAN 黑发 ⇄ 金发图像翻译。</p>
                             <div class="proj-tags">
                                 <span class="proj-tag">PyTorch</span>
                                 <span class="proj-tag">DCGAN</span>
+                                <span class="proj-tag">CycleGAN</span>
                                 <span class="proj-tag">FID / MiFID</span>
                                 <span class="proj-tag">谱归一化</span>
                                 <span class="proj-tag">Jupyter Notebook</span>
@@ -1136,6 +1142,7 @@
                                 <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-research" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#f43f5e,#8b5cf6);">专栏总览 <i class="fas fa-diagram-project"></i></a>
                                 <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-research/GAN/DCGAN-anime-faces" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);">动漫头像生成 <i class="fas fa-user-astronaut"></i></a>
                                 <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-dog-fid/GAN/dog-fid" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#ec4899,#f43f5e);">狗图生成 + FID <i class="fas fa-paw"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-CycleGAN/GAN/CycleGAN" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#f59e0b,#f43f5e);">CycleGAN 图像翻译 <i class="fas fa-wand-magic-sparkles"></i></a>
                                 <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/GAN-dog-fid/GAN/dog-fid/PROGRESS.md" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#6366f1,#0ea5e9);">迭代记录 <i class="fas fa-book"></i></a>
                             </div>
                         </div>

@@ -184,22 +184,20 @@
         .tl-title { font-size: 1rem; font-weight: 600; margin-bottom: 2px; color: var(--text); }
         .tl-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
 
-        /* ── TIMELINE: 分叉（从头学习 ⇄ GAN 研究，两条并行轨） ── */
+        /* ── TIMELINE: 分叉（从头学习 ⇄ GAN 研究 ⇄ 生成式 AI，三条并行轨） ── */
         .tl-fork-wrap {
             position: relative;
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            column-gap: 32px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            column-gap: 26px;
             padding-top: 34px;
         }
-        .tl-fork-wrap::after {              /* 分叉连线：主线 → GAN 轨 */
+        .tl-fork-wrap::after {              /* 分叉连线：主线 → 各分支轨 */
             content: ''; position: absolute;
-            left: -22px; top: 12px;
-            width: calc(50% + 38px); height: 22px;
-            border-top: 2px solid var(--pink);
-            border-right: 2px solid var(--pink);
-            border-top-right-radius: 16px;
-            opacity: 0.6;
+            left: -22px; top: 33px;
+            width: calc(100% + 22px); height: 2px;
+            background: linear-gradient(90deg, var(--pink), var(--cyan));
+            opacity: 0.5; border-radius: 2px;
         }
         .tl-fork-col--gan { position: relative; }
         .tl-fork-col--gan::before {         /* GAN 轨竖线 */
@@ -208,6 +206,18 @@
             width: 2px; background: linear-gradient(to bottom, var(--pink), var(--purple));
             opacity: 0.45;
         }
+        .tl-fork-col--gen { position: relative; }
+        .tl-fork-col--gen::before {         /* 生成式轨竖线 */
+            content: ''; position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(to bottom, var(--cyan), var(--blue));
+            opacity: 0.45;
+        }
+        .tl-fork-col--gen .tl-fork-head { color: var(--cyan); }
+        .tl-fork-col--gen .tl-fork-link { color: var(--cyan); border-color: rgba(0, 229, 255, 0.35); }
+        .tl-fork-col--gen .tl-fork-link:hover { border-color: var(--cyan); box-shadow: 0 0 12px rgba(0, 229, 255, 0.25); }
+        .tl-fork-col--gen .tl-fork-item::before { border-color: var(--cyan); box-shadow: 0 0 8px rgba(0, 229, 255, 0.45); }
+        .tl-fork-col--gen .tl-fork-item .tl-date { color: var(--cyan); }
         .tl-fork-head {
             display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
             padding-left: 26px;
@@ -241,13 +251,22 @@
             .tl-item::before { left: -18px; width: 10px; height: 10px; }
             .tl-fork-wrap { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: 0; }
             .tl-fork-wrap::after { display: none; }
-            .tl-fork-col--gan { margin-left: 24px; }
+            .tl-fork-col--gan, .tl-fork-col--gen { margin-left: 24px; }
             .tl-fork-col--gan::after {      /* 窄屏改为上下堆叠，用肘形连线衔接 */
                 content: ''; position: absolute;
                 left: -41px; top: -24px;
                 width: 41px; height: 24px;
                 border-left: 2px solid var(--pink);
                 border-bottom: 2px solid var(--pink);
+                border-bottom-left-radius: 16px;
+                opacity: 0.6;
+            }
+            .tl-fork-col--gen::after {
+                content: ''; position: absolute;
+                left: -41px; top: -24px;
+                width: 41px; height: 24px;
+                border-left: 2px solid var(--cyan);
+                border-bottom: 2px solid var(--cyan);
                 border-bottom-left-radius: 16px;
                 opacity: 0.6;
             }
@@ -775,6 +794,44 @@
                                 <div class="tl-date">进行中</div>
                                 <div class="tl-title">路线图 · WGAN / CGAN / 潜空间探索</div>
                                 <div class="tl-desc">下一步：WGAN-GP 改善训练稳定性、CGAN 条件生成、潜空间插值，以及高分辨率生成思路。</div>
+                            </div>
+                        </div>
+                        <div class="tl-fork-col tl-fork-col--gen">
+                            <div class="tl-fork-head">
+                                <i class="fas fa-diagram-project"></i>
+                                <span>并行分支 · 生成式 AI</span>
+                                <em>VAE → 分层VAE → VQ-VAE → Transformer → VQ-GAN → Diffusion</em>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/VAE" target="_blank" class="tl-fork-link">查看专栏 <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">2026.09 · 已完成</div>
+                                <div class="tl-title">VAE · 变分自编码器</div>
+                                <div class="tl-desc">从零推导 ELBO / 重参数化 / 高斯 KL 闭式，在眼镜人脸数据集上训练，并实现潜空间属性编辑（加 / 摘眼镜）。</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">进行中</div>
+                                <div class="tl-title">分层 VAE（HVAE）</div>
+                                <div class="tl-desc">把 ELBO 推广到多层潜变量，理解它作为扩散模型数学桥的角色。</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">规划中</div>
+                                <div class="tl-title">VQ-VAE · 离散码本</div>
+                                <div class="tl-desc">最近邻量化 + 直通估计 + commitment loss，进入离散潜空间。</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">规划中</div>
+                                <div class="tl-title">Transformer · 从零手写</div>
+                                <div class="tl-desc">自注意力 / 多头 / 位置编码，为 VQ-GAN 的自回归先验打底。</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">规划中</div>
+                                <div class="tl-title">VQ-GAN</div>
+                                <div class="tl-desc">VQ-VAE + 对抗 + 感知损失 + Transformer 先验，做高保真生成。</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">规划中</div>
+                                <div class="tl-title">Diffusion · DDPM → DDIM → Latent</div>
+                                <div class="tl-desc">从零实现 DDPM（“编码器固定”的分层 VAE），再推进到 Latent Diffusion。</div>
                             </div>
                         </div>
                     </div>

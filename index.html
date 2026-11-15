@@ -712,7 +712,7 @@
                             <div class="stat-label">年开发经验</div>
                         </div>
                         <div class="stat-panel">
-                            <div class="stat-value" data-target="8">0</div>
+                            <div class="stat-value" data-target="9">0</div>
                             <div class="stat-label">完成项目</div>
                         </div>
                         <div class="stat-panel">
@@ -801,7 +801,8 @@
                                 <i class="fas fa-diagram-project"></i>
                                 <span>并行分支 · 生成式 AI</span>
                                 <em>VAE → 分层VAE → VQ-VAE → Transformer → VQ-GAN → Diffusion</em>
-                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/VAE" target="_blank" class="tl-fork-link">查看专栏 <i class="fas fa-arrow-right"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/VAE" target="_blank" class="tl-fork-link">VAE 专栏 <i class="fas fa-arrow-right"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/Diffusion" target="_blank" class="tl-fork-link">Diffusion 专栏 <i class="fas fa-arrow-right"></i></a>
                             </div>
                             <div class="tl-fork-item">
                                 <div class="tl-date">2026.09 · 已完成</div>
@@ -829,9 +830,9 @@
                                 <div class="tl-desc">VQ-VAE + 对抗 + 感知损失 + Transformer 先验，做高保真生成。</div>
                             </div>
                             <div class="tl-fork-item">
-                                <div class="tl-date">规划中</div>
-                                <div class="tl-title">Diffusion · DDPM → DDIM → Latent</div>
-                                <div class="tl-desc">从零实现 DDPM（“编码器固定”的分层 VAE），再推进到 Latent Diffusion。</div>
+                                <div class="tl-date">2026.11 · 已完成</div>
+                                <div class="tl-title">Diffusion · DDPM → CFG → Latent</div>
+                                <div class="tl-desc">从零实现无条件 DDPM（U-Net + ε 预测），扩展类别条件与 CFG，接入 SRNet 4× 上采样，并完成迷你 Latent Diffusion（VAE 潜空间 + 文本 Cross-Attn）。</div>
                             </div>
                         </div>
                     </div>
@@ -1201,6 +1202,37 @@
                                 <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-dog-fid/GAN/dog-fid" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#ec4899,#f43f5e);">狗图生成 + FID <i class="fas fa-paw"></i></a>
                                 <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-CycleGAN/GAN/CycleGAN" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#f59e0b,#f43f5e);">CycleGAN 图像翻译 <i class="fas fa-wand-magic-sparkles"></i></a>
                                 <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/GAN-dog-fid/GAN/dog-fid/PROGRESS.md" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#6366f1,#0ea5e9);">迭代记录 <i class="fas fa-book"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Project 09: Diffusion Research Column -->
+                    <div class="proj-card reveal reveal-s5">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#0ea5e9,#a855f7);">
+                            <span class="proj-num">09</span>
+                            <i class="fas fa-wind fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-scan">
+                                    <i class="fas fa-wind" style="position:relative;z-index:1;"></i>
+                                    <div class="scan-line"></div>
+                                </div>
+                                <span class="preview-label">DENOISING_DIFFUSION</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>Diffusion 研究专栏</h3>
+                            <p>从零实现扩散模型：无条件 DDPM（U-Net + ε 预测）→ 类别条件 + 无分类器引导（CFG）→ SRNet 4× 上采样两阶段生成 → 迷你 Latent Diffusion（VAE 潜空间 + 文本 Cross-Attention），配套学习笔记与逐块讲解 notebook。</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">PyTorch</span>
+                                <span class="proj-tag">DDPM</span>
+                                <span class="proj-tag">CFG</span>
+                                <span class="proj-tag">U-Net</span>
+                                <span class="proj-tag">Latent Diffusion</span>
+                                <span class="proj-tag">Jupyter Notebook</span>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/Diffusion" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#0ea5e9,#a855f7);">专栏总览 <i class="fas fa-diagram-project"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/Diffusion/Diffusion/diffusion.md" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#a855f7,#6366f1);">学习笔记 <i class="fas fa-book"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/Diffusion/Diffusion" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#6366f1,#0ea5e9);">代码与 Notebook <i class="fas fa-code"></i></a>
                             </div>
                         </div>
                     </div>

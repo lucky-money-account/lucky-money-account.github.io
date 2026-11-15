@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识笔记 · MoneyForever Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="blog.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="logo" href="../index.html">MONEYFOREVER</a>
+            <nav class="site-nav">
+                <a href="../index.html">首页</a>
+                <a href="index.html">博客</a>
+                <a href="publish.html">发布</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="blog-hero">
+                <div class="kicker">&gt; KNOWLEDGE_BASE // 生成式 AI 学习笔记</div>
+                <h1>知识笔记 <span>Blog</span></h1>
+                <p>把学习过程中的知识点、公式推导与实验记录整理成可在线阅读的文章。不直接看仓库里的 Markdown 源文件，而是渲染后的完整排版（公式、表格、代码块）。</p>
+            </section>
+
+            <div class="blog-controls">
+                <div class="search-box">
+                    <span class="s-icon">/</span>
+                    <input type="text" id="searchInput" placeholder="搜索标题 / 摘要 / 标签…" autocomplete="off">
+                </div>
+                <div class="filter-chips" id="tagFilters"></div>
+            </div>
+
+            <div class="post-grid" id="postList">
+                <div class="loading">正在加载文章列表…</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 MONEYFOREVER · <a href="../index.html">HOME</a> · <a href="index.html">BLOG</a> · <a href="publish.html">PUBLISH</a></p>
+        </div>
+    </footer>
+
+    <script src="blog.js"></script>
+    <script>
+    (async function () {
+        'use strict';
+        BlogUI.highlightNav();
+
+        var listEl = document.getElementById('postList');
+        var filterEl = document.getElementById('tagFilters');
+        var searchEl = document.getElementById('searchInput');
+        var state = { posts: [], tag: '全部', q: '' };
+
+        function postCard(post) {
+            var tags = (post.tags || []).map(function (t) {
+                return '<span class="pc-tag">' + BlogUI.escapeHtml(t) + '</span>';
+            }).join('');
+            return '<a class="post-card" href="post.html?p=' + encodeURIComponent(post.slug) + '">' +
+                '<div class="pc-top">' +
+                    '<span class="pc-date">' + BlogUI.escapeHtml(BlogUI.formatDate(post.date)) + '</span>' +
+                    '<span class="pc-tags">' + tags + '</span>' +
+                '</div>' +
+                '<h3>' + BlogUI.escapeHtml(post.title) + '</h3>' +
+                '<p>' + BlogUI.escapeHtml(post.summary || '') + '</p>' +
+                '<span class="pc-more">阅读全文 →</span>' +
+            '</a>';
+        }
+
+        function render() {
+            var q = state.q.trim().toLowerCase();
+            var filtered = state.posts.filter(function (p) {
+                if (state.tag !== '全部' && (p.tags || []).indexOf(state.tag) === -1) return false;
+                if (!q) return true;
+                var hay = ((p.title || '') + ' ' + (p.summary || '') + ' ' + (p.tags || []).join(' ')).toLowerCase();
+                return hay.indexOf(q) !== -1;
+            });
+            if (!filtered.length) {
+                listEl.innerHTML = '<div class="empty-state">// 没有匹配的文章</div>';
+                return;
+            }
+            listEl.innerHTML = filtered.map(postCard).join('');
+        }
+
+        function buildFilters() {
+            var tags = ['全部'];
+            state.posts.forEach(function (p) {
+                (p.tags || []).forEach(function (t) {
+                    if (tags.indexOf(t) === -1) tags.push(t);
+                });
+            });
+            filterEl.innerHTML = tags.map(function (t) {
+                return '<button class="chip' + (t === '全部' ? ' active' : '') + '" data-tag="' +
+                    BlogUI.escapeHtml(t) + '">' + BlogUI.escapeHtml(t) + '</button>';
+            }).join('');
+            filterEl.querySelectorAll('.chip').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    state.tag = btn.dataset.tag;
+                    filterEl.querySelectorAll('.chip').forEach(function (b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    render();
+                });
+            });
+        }
+
+        searchEl.addEventListener('input', function () {
+            state.q = searchEl.value;
+            render();
+        });
+
+        try {
+            var data = await BlogUI.fetchJSON('posts.json');
+            state.posts = (data.posts || []).slice().sort(function (a, b) {
+                return String(b.date || '').localeCompare(String(a.date || ''));
+            });
+            if (!state.posts.length) {
+                listEl.innerHTML = '<div class="empty-state">// 还没有文章，去 <a href="publish.html">发布中心</a> 上传第一篇吧</div>';
+                return;
+            }
+            buildFilters();
+            render();
+        } catch (e) {
+            listEl.innerHTML = '<div class="error-box">文章列表加载失败：' + BlogUI.escapeHtml(e.message) +
+                '。请确认 blog/posts.json 存在且格式正确。</div>';
+        }
+    })();
+    </script>
+</body>
+</html>

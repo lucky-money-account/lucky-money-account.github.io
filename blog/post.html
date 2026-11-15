@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章 · MoneyForever Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="blog.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="logo" href="../index.html">MONEYFOREVER</a>
+            <nav class="site-nav">
+                <a href="../index.html">首页</a>
+                <a href="index.html">博客</a>
+                <a href="publish.html">发布</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="post-page">
+        <div class="container">
+            <div class="post-head">
+                <div class="crumb">
+                    <a href="../index.html">HOME</a> / <a href="index.html">BLOG</a> / <span id="crumbTitle">文章</span>
+                </div>
+                <h1 id="postTitle">加载中…</h1>
+                <p class="post-summary" id="postSummary"></p>
+                <div class="post-meta">
+                    <span id="postDate"></span>
+                    <span id="postRead"></span>
+                    <span id="postTags"></span>
+                </div>
+            </div>
+
+            <details class="toc-mobile">
+                <summary>目录 / CONTENTS</summary>
+                <ul id="tocListMobile"></ul>
+            </details>
+
+            <div class="post-layout">
+                <article class="article" id="postBody">
+                    <div class="loading">正在加载文章…</div>
+                </article>
+                <aside class="toc-aside">
+                    <h4>目录 / CONTENTS</h4>
+                    <ul id="tocList"></ul>
+                </aside>
+            </div>
+
+            <div class="post-foot">
+                <a href="index.html">← 返回文章列表</a>
+                <a href="../index.html">回到主页 →</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 MONEYFOREVER · <a href="../index.html">HOME</a> · <a href="index.html">BLOG</a> · <a href="publish.html">PUBLISH</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="blog.js"></script>
+    <script>
+    (async function () {
+        'use strict';
+        BlogUI.highlightNav();
+
+        var body = document.getElementById('postBody');
+        var titleEl = document.getElementById('postTitle');
+        var slug = new URLSearchParams(location.search).get('p');
+
+        function fail(msg) {
+            body.innerHTML = '<div class="error-box">' + msg + '</div>';
+            titleEl.textContent = '文章加载失败';
+        }
+
+        if (!slug) {
+            fail('缺少文章参数（<code>?p=文章标识</code>）。请从 <a href="index.html">文章列表</a> 进入。');
+            return;
+        }
+
+        try {
+            var data = await BlogUI.fetchJSON('posts.json');
+            var posts = data.posts || [];
+            var post = posts.filter(function (p) { return p.slug === slug; })[0];
+            if (!post) throw new Error('没有找到标识为“' + slug + '”的文章');
+
+            titleEl.textContent = post.title;
+            document.title = post.title + ' · MoneyForever Blog';
+            document.getElementById('crumbTitle').textContent = post.title;
+            if (post.summary) document.getElementById('postSummary').textContent = post.summary;
+
+            var tagsHtml = (post.tags || []).map(function (t) {
+                return '<span class="pc-tag">' + BlogUI.escapeHtml(t) + '</span>';
+            }).join(' ');
+            document.getElementById('postTags').innerHTML = tagsHtml;
+
+            var file = post.file || ('posts/' + post.slug + '.md');
+            var res = await fetch(file, { cache: 'no-store' });
+            if (!res.ok) throw new Error('正文文件读取失败（HTTP ' + res.status + '）：' + file);
+            var md = await res.text();
+
+            document.getElementById('postDate').textContent = BlogUI.formatDate(post.date);
+            document.getElementById('postRead').textContent = '约 ' + BlogUI.readingTime(md) + ' 阅读';
+
+            var toc = BlogUI.renderMarkdown(BlogUI.stripLeadingH1(md), body);
+            BlogUI.renderToc(toc);
+        } catch (e) {
+            fail('加载失败：' + BlogUI.escapeHtml(e.message) + '。若刚发布文章，请等待 1–2 分钟让 GitHub Pages 完成构建。');
+        }
+    })();
+    </script>
+</body>
+</html>

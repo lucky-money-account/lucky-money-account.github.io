@@ -586,6 +586,22 @@
         .reveal-s5 { transition-delay: 0.40s; }
 
         /* ── RESPONSIVE ── */
+        /* 中等宽度：导航项较多，提前切换为汉堡菜单，避免横向溢出 */
+        @media (max-width: 1280px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 62px; left: -100%; width: 100%;
+                flex-direction: column; background: rgba(5, 9, 20, 0.97);
+                backdrop-filter: blur(20px); text-align: center;
+                padding: 16px 0; gap: 4px; transition: left 0.3s;
+                border-bottom: 1px solid var(--border);
+                max-height: calc(100vh - 62px); overflow-y: auto;
+            }
+            .nav-links.active { left: 0; }
+            .nav-links li { margin: 0; }
+            .nav-links a { display: block; padding: 10px 0; font-size: 0.9rem; }
+        }
+
         @media (max-width: 768px) {
             .hero .container { flex-direction: column; text-align: center; }
             .hero h1 { font-size: 2rem; }
@@ -595,18 +611,6 @@
             .cards-grid { grid-template-columns: 1fr; }
             .stat-panels { grid-template-columns: 1fr; }
             .skill-bars { grid-template-columns: 1fr; }
-
-            .hamburger { display: flex; }
-            .nav-links {
-                position: fixed; top: 62px; left: -100%; width: 100%;
-                flex-direction: column; background: rgba(5, 9, 20, 0.97);
-                backdrop-filter: blur(20px); text-align: center;
-                padding: 16px 0; gap: 4px; transition: left 0.3s;
-                border-bottom: 1px solid var(--border);
-            }
-            .nav-links.active { left: 0; }
-            .nav-links li { margin: 0; }
-            .nav-links a { display: block; padding: 10px 0; font-size: 0.9rem; }
 
             .avatar-wrap { width: 180px; height: 180px; }
             .orbit-ring:nth-child(2) { width: 210px; height: 210px; }
@@ -638,6 +642,7 @@
                     <li><a href="#social">SOCIAL</a></li>
                     <li><a href="#hobbies">HOBBIES</a></li>
                     <li><a href="#projects">PROJECTS</a></li>
+                    <li><a href="blog/index.html">BLOG</a></li>
                     <li><a href="#contact">CONTACT</a></li>
                 </ul>
                 <div style="display:flex;align-items:center;">

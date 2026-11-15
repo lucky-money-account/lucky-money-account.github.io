@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>发布中心 · MoneyForever Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="blog.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="logo" href="../index.html">MONEYFOREVER</a>
+            <nav class="site-nav">
+                <a href="../index.html">首页</a>
+                <a href="index.html">博客</a>
+                <a href="publish.html">发布</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="publish-page">
+        <div class="container">
+            <section class="blog-hero" style="padding-top:40px;">
+                <div class="kicker">&gt; PUBLISH_CENTER // 拖拽上传 · 一键渲染发布</div>
+                <h1>发布中心</h1>
+                <p>把 Markdown 笔记拖进来，页面会用与文章页完全相同的渲染器预览公式 / 表格 / 代码，然后经 GitHub API 提交到博客仓库。仓库提交后 GitHub Pages 会自动重新构建（通常 1–2 分钟），文章即可在博客里打开。</p>
+            </section>
+
+            <!-- 1. Token 配置 -->
+            <div class="panel">
+                <h2>GITHUB 配置</h2>
+                <div class="field-row">
+                    <input type="password" id="tokenInput" placeholder="Fine-grained Personal Access Token" style="flex:1 1 340px;" autocomplete="off">
+                    <button class="btn-sm" id="saveTokenBtn">保存到本机</button>
+                    <button class="btn-sm muted" id="clearTokenBtn">清除</button>
+                    <button class="btn-sm muted" id="checkTokenBtn">校验</button>
+                </div>
+                <div class="status-line" id="tokenState"></div>
+                <p class="hint" style="margin-top:12px;">
+                    目标仓库：<strong id="repoInfo"></strong>（分支 <code>main</code>）<br>
+                    · 需要新建一个 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained Token</a>，
+                    Repository access 只选 <code>lucky-money-account.github.io</code>，权限勾选 <strong>Contents → Read and write</strong> 即可，其它权限全不选。<br>
+                    · Token 只保存在<strong>你自己浏览器的 localStorage</strong>，不会提交进仓库；此页面公开但别人没有你的 Token，无法写入。<br>
+                    · 没有 Token 也没关系：下方仍可「下载 Markdown / posts.json」，按第 3 节手动提交。
+                </p>
+            </div>
+
+            <!-- 2. 拖拽上传 -->
+            <div class="panel">
+                <h2>拖拽上传</h2>
+                <div class="dropzone" id="dropzone">
+                    <div class="dz-icon">⇩</div>
+                    <div class="dz-main">把 .md 文件拖到这里，或点击选择文件</div>
+                    <div class="dz-sub">支持多选；文件会先本地预览，确认后再发布。图片暂不支持自动上传（可放 blog/assets/ 并在文中用相对路径）。</div>
+                    <div class="dz-sub" style="margin-top:6px;">公式用 $...$ / $$...$$ 包裹；含 $ 的代码请放进围栏代码块，货币符号建议写作“美元”以免被当成公式。</div>
+                </div>
+                <input type="file" id="fileInput" accept=".md,.markdown,.txt,text/markdown" multiple hidden>
+
+                <div class="file-list" id="fileList"></div>
+
+                <div class="actions-row">
+                    <button class="btn-primary" id="publishBtn">发布全部到 GitHub</button>
+                    <button class="btn-sm" id="downloadMdBtn">下载 Markdown</button>
+                    <button class="btn-sm" id="downloadJsonBtn">下载 posts.json</button>
+                    <button class="btn-sm muted" id="clearAllBtn">清空列表</button>
+                </div>
+
+                <div class="log" id="log"><div>// 发布日志会显示在这里</div></div>
+            </div>
+
+            <!-- 3. 手动发布说明 -->
+            <div class="panel">
+                <h2>手动发布（无 Token）</h2>
+                <p class="hint">
+                    1. 拖入 Markdown，填好标题 / Slug / 摘要 / 标签，点「下载 Markdown」得到 <code>&lt;slug&gt;.md</code>；<br>
+                    2. 把文件放到仓库的 <code>blog/posts/</code> 目录（可通过 GitHub 网页 Upload files 直接拖拽上传）；<br>
+                    3. 点「下载 posts.json」，用它替换仓库里的 <code>blog/posts.json</code>（或手动在 JSON 的 <code>posts</code> 数组里加一条记录）；<br>
+                    4. 提交后等待 GitHub Pages 重新构建，刷新 <a href="index.html">文章列表</a> 即可看到。
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 MONEYFOREVER · <a href="../index.html">HOME</a> · <a href="index.html">BLOG</a> · <a href="publish.html">PUBLISH</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="blog.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        var REPO = { owner: 'lucky-money-account', repo: 'lucky-money-account.github.io', branch: 'main' };
+        var TOKEN_KEY = 'mf_blog_github_token_v1';
+        var state = { token: '', items: [], busy: false };
+
+        var $ = function (id) { return document.getElementById(id); };
+        var logEl = $('log');
+
+        function log(msg, cls, linkUrl, linkText) {
+            var d = document.createElement('div');
+            if (cls) d.className = cls;
+            d.textContent = msg;
+            if (linkUrl) {
+                var a = document.createElement('a');
+                a.href = linkUrl;
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.textContent = linkText || '打开';
+                a.style.marginLeft = '8px';
+                d.appendChild(a);
+            }
+            logEl.appendChild(d);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function esc(s) { return BlogUI.escapeHtml(s); }
+
+        function splitTags(s) {
+            return String(s || '').split(/[,，、]/).map(function (x) { return x.trim(); }).filter(Boolean);
+        }
+
+        /* ── 从文件名 / 标题推导 slug ── */
+        function slugFromName(name, title) {
+            var base = String(name).replace(/\.[^.]+$/, '').toLowerCase()
+                .replace(/[^a-z0-9\u4e00-\u9fff\-_\s]/g, '')
+                .trim().replace(/[\s_]+/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+            if (!base) base = BlogUI.slugify(title);
+            if (!base) base = 'post-' + Date.now().toString(36);
+            return base;
+        }
+
+        /* slug 只允许字母/数字/中文/-/_，避免路径穿越或非法文件路径 */
+        function isValidSlug(slug) {
+            return /^[a-z0-9\u4e00-\u9fff][a-z0-9\u4e00-\u9fff_-]*$/i.test(String(slug || ''));
+        }
+        function byteLength(text) {
+            try { return new TextEncoder().encode(text).length; }
+            catch (e) { return String(text).length; }
+        }
+
+        function firstParagraph(md) {
+            var lines = String(md || '').split(/\r?\n/), inCode = false;
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                if (/^\s*(```+|~~~+)/.test(line)) { inCode = !inCode; continue; }
+                if (inCode) continue;
+                var t = line.trim();
+                if (!t || t.charAt(0) === '#' || t.charAt(0) === '>' || t.charAt(0) === '|') continue;
+                if (t === '---' || t === '***') continue;
+                return t.replace(/[*_`$]/g, '').slice(0, 120);
+            }
+            return '';
+        }
+
+        /* ── Token 配置 ── */
+        function loadToken() {
+            try { state.token = localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { state.token = ''; }
+            $('tokenInput').value = state.token;
+            renderTokenState();
+        }
+        function renderTokenState() {
+            var el = $('tokenState');
+            if (state.token) {
+                el.textContent = '已在本机保存 Token（只存 localStorage）';
+                el.className = 'status-line ok';
+            } else {
+                el.textContent = '未保存 Token —— 仍可下载文件手动发布';
+                el.className = 'status-line';
+            }
+        }
+        $('saveTokenBtn').addEventListener('click', function () {
+            state.token = $('tokenInput').value.trim();
+            try {
+                if (state.token) localStorage.setItem(TOKEN_KEY, state.token);
+                else localStorage.removeItem(TOKEN_KEY);
+            } catch (e) { /* ignore */ }
+            renderTokenState();
+            log(state.token ? 'Token 已保存到本机浏览器' : 'Token 已清除（本机）', state.token ? 'ok' : '');
+        });
+        $('clearTokenBtn').addEventListener('click', function () {
+            state.token = '';
+            $('tokenInput').value = '';
+            try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* ignore */ }
+            renderTokenState();
+            log('Token 已清除（本机）');
+        });
+        $('checkTokenBtn').addEventListener('click', async function () {
+            var token = $('tokenInput').value.trim();
+            if (!token) { log('请先填写 Token', 'err'); return; }
+            log('正在校验 Token…');
+            try {
+                var res = await fetch('https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo, {
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
+                });
+                if (!res.ok) { log('校验失败：HTTP ' + res.status + '（Token 无效或无该仓库访问权）', 'err'); return; }
+                var j = await res.json();
+                var canWrite = !!(j.permissions && j.permissions.push);
+                log('Token 有效 · 仓库 ' + j.full_name + ' · 写权限：' + (canWrite ? '有' : '无'), canWrite ? 'ok' : 'err');
+            } catch (e) { log('网络错误：' + e.message, 'err'); }
+        });
+
+        /* ── GitHub Contents API ── */
+        function apiHeaders() {
+            return { 'Authorization': 'Bearer ' + state.token.trim(), 'Accept': 'application/vnd.github+json' };
+        }
+        function apiUrl(path) {
+            return 'https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + path;
+        }
+        function toBase64(str) {
+            var bytes = new TextEncoder().encode(str);
+            var bin = '';
+            for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+            return btoa(bin);
+        }
+        async function readErr(res) {
+            try {
+                var j = await res.json();
+                return j.message || ('HTTP ' + res.status);
+            } catch (e) { return 'HTTP ' + res.status; }
+        }
+        function authHint(status) {
+            if (status === 401) return '（Token 无效或已过期）';
+            if (status === 403) return '（权限不足或触发限流：需要 Contents 读写权限）';
+            if (status === 404) return '（仓库/分支不存在，或 Token 无权访问）';
+            if (status === 422) return '（参数错误：内容为空或文件过大）';
+            return '';
+        }
+        /* 读取远端文件文本（用于安全地合并 posts.json，避免用缓存覆盖索引） */
+        async function ghGetText(path) {
+            var res = await fetch(apiUrl(path) + '?ref=' + REPO.branch, { headers: apiHeaders() });
+            if (res.status === 404) return null;
+            if (!res.ok) throw new Error('读取 ' + path + ' 失败：' + await readErr(res) + authHint(res.status));
+            var j = await res.json();
+            var b64 = String(j.content || '').replace(/\n/g, '');
+            if (!b64) return '';
+            var bin = atob(b64);
+            var bytes = new Uint8Array(bin.length);
+            for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            return new TextDecoder('utf-8').decode(bytes);
+        }
+
+        async function ghPut(path, text, message) {
+            var head = await fetch(apiUrl(path) + '?ref=' + REPO.branch, { headers: apiHeaders() });
+            var sha = null;
+            if (head.ok) {
+                sha = (await head.json()).sha;
+            } else if (head.status !== 404) {
+                throw new Error('读取 ' + path + ' 失败：' + await readErr(head) + authHint(head.status));
+            }
+            var body = { message: message, content: toBase64(text), branch: REPO.branch };
+            if (sha) body.sha = sha;
+            var res = await fetch(apiUrl(path), {
+                method: 'PUT',
+                headers: Object.assign({ 'Content-Type': 'application/json' }, apiHeaders()),
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) throw new Error('写入 ' + path + ' 失败：' + await readErr(res) + authHint(res.status));
+            return res.json();
+        }
+
+        /* ── 文件列表 ── */
+        async function addFiles(fileList) {
+            var files = Array.prototype.slice.call(fileList || []);
+            for (var i = 0; i < files.length; i++) {
+                var f = files[i];
+                if (!/\.(md|markdown|txt)$/i.test(f.name)) {
+                    log('跳过非 Markdown 文件：' + f.name, 'err');
+                    continue;
+                }
+                var text;
+                try { text = await f.text(); } catch (e) { log('读取失败：' + f.name, 'err'); continue; }
+                if (!text.trim()) { log('空文件：' + f.name, 'err'); continue; }
+                var titleMatch = text.match(/^\s*#\s+(.+)$/m);
+                var title = titleMatch ? titleMatch[1].trim() : f.name.replace(/\.[^.]+$/, '');
+                var slug = slugFromName(f.name, title);
+                if (state.items.some(function (it) { return it.slug === slug; })) {
+                    var baseSlug = slug, n = 2;
+                    while (state.items.some(function (it) { return it.slug === slug; })) {
+                        slug = baseSlug + '-' + n;
+                        n++;
+                    }
+                }
+                state.items.push({
+                    name: f.name, text: text, title: title, slug: slug,
+                    summary: firstParagraph(text), tags: ''
+                });
+                log('已添加：' + f.name);
+            }
+            renderItems();
+        }
+
+        function renderItems() {
+            var box = $('fileList');
+            box.innerHTML = '';
+            if (!state.items.length) {
+                box.innerHTML = '<div class="hint">还没有待发布文件。拖拽或点击上方区域添加 Markdown。</div>';
+                return;
+            }
+            state.items.forEach(function (item, idx) {
+                var card = document.createElement('div');
+                card.className = 'file-card';
+                card.innerHTML =
+                    '<div class="fc-head">' +
+                        '<span class="fc-name">' + esc(item.name) + '</span>' +
+                        '<div style="display:flex;gap:8px;">' +
+                            '<button class="btn-sm muted" data-act="preview">预览</button>' +
+                            '<button class="btn-sm muted" data-act="remove">移除</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="fc-grid">' +
+                        '<label>标题<input type="text" data-field="title" value="' + esc(item.title) + '"></label>' +
+                        '<label>Slug（文件名 / URL）<input type="text" data-field="slug" value="' + esc(item.slug) + '"></label>' +
+                        '<label>摘要<input type="text" data-field="summary" value="' + esc(item.summary) + '"></label>' +
+                        '<label>标签（逗号分隔）<input type="text" data-field="tags" value="' + esc(item.tags) + '" placeholder="生成式 AI, VAE"></label>' +
+                    '</div>' +
+                    '<div class="fc-preview"></div>';
+
+                card.querySelectorAll('input[data-field]').forEach(function (input) {
+                    input.addEventListener('input', function () {
+                        item[input.dataset.field] = input.value;
+                    });
+                });
+                var previewEl = card.querySelector('.fc-preview');
+                card.querySelector('[data-act="preview"]').addEventListener('click', function () {
+                    var open = previewEl.classList.toggle('open');
+                    if (open) {
+                        previewEl.innerHTML = '<article class="article"></article>';
+                        BlogUI.renderMarkdown(BlogUI.stripLeadingH1(item.text), previewEl.querySelector('article'));
+                    }
+                });
+                card.querySelector('[data-act="remove"]').addEventListener('click', function () {
+                    state.items.splice(idx, 1);
+                    renderItems();
+                });
+                box.appendChild(card);
+            });
+        }
+
+        /* ── 发布 ── */
+        function setBusy(busy) {
+            state.busy = busy;
+            $('publishBtn').disabled = busy;
+            $('publishBtn').textContent = busy ? '发布中…' : '发布全部到 GitHub';
+        }
+
+        async function publishAll() {
+            if (state.busy) return;
+            state.token = $('tokenInput').value.trim();
+            if (!state.token) { log('请先填写并保存 GitHub Token（见第 1 节）', 'err'); return; }
+            if (!state.items.length) { log('没有待发布的文件', 'err'); return; }
+
+            var valid = state.items.filter(function (it) {
+                if (!isValidSlug(it.slug)) {
+                    log('跳过非法 slug：' + (it.slug || '(空)') + '（只允许字母/数字/中文/-/_）', 'err');
+                    return false;
+                }
+                return true;
+            });
+            if (!valid.length) { log('没有 slug 合法的文件可发布', 'err'); return; }
+
+            setBusy(true);
+            try {
+                log('=== 开始发布 ' + valid.length + ' 篇文章 ===');
+                /* 先从 GitHub API 读取最新 posts.json：读失败就中止，避免把已发布索引覆盖成空 */
+                var indexText = await ghGetText('blog/posts.json');
+                var posts = [];
+                if (indexText === null) {
+                    log('远端暂无 posts.json，将新建索引');
+                } else {
+                    try {
+                        posts = (JSON.parse(indexText).posts || []).slice();
+                    } catch (pe) {
+                        throw new Error('远端 posts.json 解析失败，已中止以免覆盖：' + pe.message);
+                    }
+                }
+
+                for (var i = 0; i < valid.length; i++) {
+                    var item = valid[i];
+                    var path = 'blog/posts/' + item.slug + '.md';
+                    if (byteLength(item.text) > 1000000) log('警告：' + item.name + ' 超过 1MB，GitHub Contents API 可能拒绝', 'err');
+                    await ghPut(path, item.text, 'blog: publish ' + item.slug);
+                    var entry = {
+                        slug: item.slug,
+                        title: item.title,
+                        date: new Date().toISOString().slice(0, 10),
+                        summary: item.summary,
+                        tags: splitTags(item.tags),
+                        file: 'posts/' + item.slug + '.md'
+                    };
+                    var idx = -1;
+                    for (var k = 0; k < posts.length; k++) if (posts[k].slug === item.slug) { idx = k; break; }
+                    if (idx >= 0) posts[idx] = entry; else posts.push(entry);
+                    log('✓ 已上传 ' + path, 'ok', 'post.html?p=' + encodeURIComponent(item.slug), '打开文章');
+                }
+
+                posts.sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
+                await ghPut('blog/posts.json', JSON.stringify({ posts: posts }, null, 2) + '\n', 'blog: update posts index');
+                log('✓ posts.json 已更新', 'ok');
+                log('✓ 发布完成：GitHub Pages 通常 1–2 分钟后生效', 'ok', 'index.html', '查看文章列表');
+            } catch (e) {
+                log('✗ 发布失败：' + e.message, 'err');
+            } finally {
+                setBusy(false);
+            }
+        }
+
+        /* ── 下载（手动发布） ── */
+        function download(name, text) {
+            var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+        }
+        function buildManifestFromItems(basePosts) {
+            var posts = (basePosts || []).slice();
+            state.items.forEach(function (item) {
+                if (!isValidSlug(item.slug)) return;
+                var entry = {
+                    slug: item.slug, title: item.title,
+                    date: new Date().toISOString().slice(0, 10),
+                    summary: item.summary, tags: splitTags(item.tags),
+                    file: 'posts/' + item.slug + '.md'
+                };
+                var idx = -1;
+                for (var k = 0; k < posts.length; k++) if (posts[k].slug === item.slug) { idx = k; break; }
+                if (idx >= 0) posts[idx] = entry; else posts.push(entry);
+            });
+            posts.sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
+            return posts;
+        }
+
+        $('publishBtn').addEventListener('click', publishAll);
+        $('downloadMdBtn').addEventListener('click', function () {
+            var items = state.items.filter(function (it) {
+                if (!isValidSlug(it.slug)) {
+                    log('跳过非法 slug 的文件：' + it.name, 'err');
+                    return false;
+                }
+                return true;
+            });
+            if (!items.length) { log('没有 slug 合法的文件可下载', 'err'); return; }
+            items.forEach(function (item) { download(item.slug + '.md', item.text); });
+            log('已触发下载 ' + items.length + ' 个 Markdown 文件（若浏览器拦截多文件下载，请逐个下载）', 'ok');
+        });
+        $('downloadJsonBtn').addEventListener('click', async function () {
+            var base = [];
+            state.token = $('tokenInput').value.trim();
+            try {
+                if (state.token) {
+                    var indexText = await ghGetText('blog/posts.json');
+                    base = indexText === null ? [] : (JSON.parse(indexText).posts || []);
+                } else {
+                    base = (await BlogUI.fetchJSON('posts.json')).posts || [];
+                }
+            } catch (e) {
+                log('无法安全读取现有 posts.json（' + e.message + '），为避免覆盖已发布索引，已取消下载', 'err');
+                return;
+            }
+            var posts = buildManifestFromItems(base);
+            download('posts.json', JSON.stringify({ posts: posts }, null, 2) + '\n');
+            log('已下载 posts.json（' + posts.length + ' 条记录）', 'ok');
+        });
+        $('clearAllBtn').addEventListener('click', function () {
+            state.items = [];
+            renderItems();
+            log('列表已清空');
+        });
+
+        /* ── 拖拽 / 选择 ── */
+        var dropzone = $('dropzone');
+        var fileInput = $('fileInput');
+        dropzone.addEventListener('click', function () { fileInput.click(); });
+        dropzone.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+        dropzone.addEventListener('dragleave', function () {
+            dropzone.classList.remove('dragover');
+        });
+        dropzone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            addFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', function () {
+            addFiles(fileInput.files);
+            fileInput.value = '';
+        });
+
+        /* ── 初始化 ── */
+        $('repoInfo').textContent = REPO.owner + '/' + REPO.repo;
+        BlogUI.highlightNav();
+        loadToken();
+        renderItems();
+        log('发布中心就绪');
+    })();
+    </script>
+</body>
+</html>

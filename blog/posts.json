@@ -1,0 +1,36 @@
+{
+  "posts": [
+    {
+      "slug": "diffusion",
+      "title": "Diffusion 模型核心学习笔记（从 U-Net 到 DiT 的桥梁）",
+      "date": "2026-11-02",
+      "summary": "从「预测噪声」的直觉到工程落地：前向 / 反向过程、U-Net 拆解、CFG、Cosine / EMA 等工程技巧，以及走向 DiT 的路线。",
+      "tags": ["生成式 AI", "Diffusion"],
+      "file": "posts/diffusion.md"
+    },
+    {
+      "slug": "hierarchical-vae",
+      "title": "分层 VAE（HVAE）· 知识点与实验记录",
+      "date": "2026-10-14",
+      "summary": "把 ELBO 推广到多层潜变量，并记录最小 2 层 VAE 的实验结果，说明「扩散 = 编码器固定的分层 VAE」。",
+      "tags": ["生成式 AI", "VAE"],
+      "file": "posts/hierarchical-vae.md"
+    },
+    {
+      "slug": "vae-math",
+      "title": "VAE — 从数学理论到算法实现",
+      "date": "2026-10-03",
+      "summary": "从积分不可解出发，一步步推到 ELBO、重参数化与高斯 KL 闭式解，最后落到代码实现。",
+      "tags": ["生成式 AI", "VAE", "数学推导"],
+      "file": "posts/vae-math.md"
+    },
+    {
+      "slug": "vae",
+      "title": "VAE（变分自编码器）· 知识点文档",
+      "date": "2026-09-29",
+      "summary": "生成式 AI 站 A 的速查文档：从 AE 到 VAE，讲清 ELBO、重参数化、KL 闭式解与潜空间插值，并对照 GAN / Diffusion。",
+      "tags": ["生成式 AI", "VAE"],
+      "file": "posts/vae.md"
+    }
+  ]
+}

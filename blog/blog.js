@@ -206,10 +206,25 @@
             a.rel = 'noopener noreferrer';
         });
 
+        /* 图片：懒加载 + 点击查看原图 */
+        container.querySelectorAll('img').forEach(function (img) {
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            var src = img.getAttribute('src');
+            if (!src || img.closest('a')) return;
+            var a = document.createElement('a');
+            a.className = 'img-link';
+            a.href = src;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            img.parentNode.insertBefore(a, img);
+            a.appendChild(img);
+        });
+
         /* heading id + 目录：先把公式占位符还原成 $tex$，否则目录会显示 @@MATH…@@ */
         var toc = [];
         var usedIds = Object.create(null);
-        container.querySelectorAll('h2, h3, h4').forEach(function (h, idx) {
+        container.querySelectorAll('h1, h2, h3, h4').forEach(function (h, idx) {
             var tocText = h.textContent.replace(/@@MATH(BLK|INL)(\d+)@@/g, function (m, kind, n) {
                 var item = extracted.maths[Number(n)];
                 if (!item) return '';
@@ -220,7 +235,8 @@
             while (usedIds[id]) { id = base + '-' + n; n++; }
             usedIds[id] = true;
             h.id = id;
-            toc.push({ id: id, text: tocText.trim(), level: Number(h.tagName.charAt(1)) });
+            var level = Number(h.tagName.charAt(1));
+            if (level <= 3) toc.push({ id: id, text: tocText.trim(), level: level });
         });
 
         mountMath(container, extracted.maths);

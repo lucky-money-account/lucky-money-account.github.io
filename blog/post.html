@@ -113,7 +113,14 @@
             document.getElementById('postDate').textContent = BlogUI.formatDate(post.date);
             document.getElementById('postRead').textContent = '约 ' + BlogUI.readingTime(md) + ' 阅读';
 
-            var toc = BlogUI.renderMarkdown(BlogUI.stripLeadingH1(md), body);
+            /* 只有正文首个 H1 与文章标题一致时才隐藏它，避免误删正文第一章节 */
+            var firstH1 = md.match(/^\s*#\s+([^\n]+)/m);
+            var bodyMd = md;
+            if (firstH1 && firstH1[1].trim() === String(post.title || '').trim()) {
+                bodyMd = BlogUI.stripLeadingH1(md);
+            }
+
+            var toc = BlogUI.renderMarkdown(bodyMd, body);
             BlogUI.renderToc(toc);
         } catch (e) {
             fail('加载失败：' + BlogUI.escapeHtml(e.message) + '。若刚发布文章，请等待 1–2 分钟让 GitHub Pages 完成构建。');

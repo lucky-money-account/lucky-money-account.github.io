@@ -1,0 +1,1691 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyForever · Terminal</title>
+    <meta name="description" content="MoneyForever — Software Engineering student at UESTC. Deep learning, generative models and computer vision projects, notes and experiments.">
+    <link rel="canonical" href="https://lucky-money-account.github.io/index-en.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://lucky-money-account.github.io/">
+    <link rel="alternate" hreflang="en" href="https://lucky-money-account.github.io/index-en.html">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #050914;
+            --bg-surface: rgba(10, 16, 36, 0.85);
+            --cyan: #00e5ff;
+            --purple: #b44aff;
+            --pink: #ff2d75;
+            --blue: #448aff;
+            --green: #00e676;
+            --text: #c8d2f0;
+            --text-dim: #5a6380;
+            --border: rgba(0, 229, 255, 0.15);
+            --glow: 0 0 20px rgba(0, 229, 255, 0.15);
+            --radius: 12px;
+            --font-mono: 'Orbitron', 'Courier New', monospace;
+            --font-body: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--cyan) var(--bg-deep); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 3px; }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text);
+            font-family: var(--font-body);
+            line-height: 1.7;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        canvas#starfield {
+            position: fixed; top: 0; left: 0; z-index: 0;
+            pointer-events: none;
+        }
+
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 1;
+        }
+
+        .cursor-glow {
+            position: fixed; pointer-events: none; z-index: 9999;
+            width: 280px; height: 280px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.07) 0%, transparent 70%);
+            transform: translate(-50%, -50%); opacity: 0; transition: opacity 0.4s;
+        }
+
+        .container { width: 90%; max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+
+        /* ── HEADER ── */
+        header {
+            position: fixed; top: 0; width: 100%; z-index: 1000;
+            background: rgba(5, 9, 20, 0.8); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            transition: all 0.4s;
+        }
+        header.scrolled { background: rgba(5, 9, 20, 0.95); box-shadow: 0 0 30px rgba(0, 229, 255, 0.08); }
+
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 0;
+        }
+
+        .logo {
+            font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700;
+            color: var(--cyan); display: flex; align-items: center; gap: 10px;
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4); letter-spacing: 2px;
+        }
+        .logo i { font-size: 1.5rem; }
+
+        .nav-links { display: flex; list-style: none; gap: 2px; }
+        .nav-links a {
+            text-decoration: none; color: var(--text-dim); font-size: 0.78rem;
+            padding: 6px 8px; border-radius: 4px;
+            transition: all 0.3s; position: relative; letter-spacing: 0.5px;
+            font-family: var(--font-mono); font-weight: 400;
+        }
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--cyan); text-shadow: 0 0 10px var(--cyan);
+            background: rgba(0, 229, 255, 0.06);
+        }
+
+        .theme-toggle {
+            background: none; border: 1px solid var(--border); color: var(--cyan);
+            width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+            font-size: 1rem; transition: all 0.4s; margin-left: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .theme-toggle:hover { box-shadow: 0 0 15px rgba(0, 229, 255, 0.3); }
+
+        .hamburger { display: none; flex-direction: column; cursor: pointer; background: none; border: none; gap: 5px; padding: 5px; }
+        .hamburger span { width: 24px; height: 2px; background: var(--cyan); transition: all 0.3s; border-radius: 2px; }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+        /* ── SECTIONS ── */
+        section { padding: 100px 0; position: relative; z-index: 2; }
+
+        .section-title {
+            font-family: var(--font-mono); font-size: 1.8rem; font-weight: 700;
+            margin-bottom: 48px; letter-spacing: 3px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .section-title::before { content: '//'; color: var(--cyan); font-size: 1.4rem; opacity: 0.7; }
+        .section-title span { color: var(--cyan); }
+
+        /* ── HERO ── */
+        .hero { display: flex; align-items: center; min-height: 100vh; padding-top: 80px; }
+        .hero .container { display: flex; align-items: center; gap: 60px; }
+        .hero-content { flex: 1; }
+        .hero-image { flex: 0 0 auto; position: relative; }
+
+        .hero-greeting { font-family: var(--font-mono); color: var(--cyan); font-size: 0.95rem; letter-spacing: 4px; margin-bottom: 12px; opacity: 0; animation: fadeSlideUp 0.6s 0.2s forwards; }
+
+        .hero h1 { font-family: var(--font-mono); font-size: 3rem; font-weight: 900; margin-bottom: 8px; letter-spacing: 2px; opacity: 0; animation: fadeSlideUp 0.6s 0.4s forwards; }
+        .hero h1 .highlight { color: var(--cyan); text-shadow: 0 0 30px rgba(0, 229, 255, 0.5); position: relative; }
+        .hero h1 .highlight::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent 35%, rgba(0,229,255,0.35) 50%, transparent 65%);
+            background-size: 200% 100%;
+            animation: shimmer 3.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes shimmer { 0%,100% { background-position: -200% center; } 50% { background-position: 200% center; } }
+
+        .motto-line { text-align: center; margin-top: 16px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-dim); opacity: 0; animation: fadeSlideUp 0.6s 1s forwards; letter-spacing: 1px; }
+        .motto-line i { color: var(--cyan); margin: 0 8px; }
+        .motto-terminal { position: relative; max-width: 650px; margin: 20px auto 0; background: rgba(0,8,2,0.88); border: 1px solid rgba(0,255,65,0.3); border-radius: 8px; overflow: hidden; box-shadow: 0 0 20px rgba(0,255,65,0.1),inset 0 0 30px rgba(0,0,0,0.5); opacity: 0; animation: fadeSlideUp 0.6s 1s forwards; }
+        .motto-terminal .mt-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(0,255,65,0.04); border-bottom: 1px solid rgba(0,255,65,0.15); font-family: var(--font-mono); font-size: 0.62rem; color: rgba(0,255,65,0.5); letter-spacing: 1px; }
+        .motto-terminal .mt-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .motto-terminal .mt-dot.r { background: #ff5f56; } .mt-dot.y { background: #ffbd2e; } .mt-dot.g { background: #27c93f; }
+        .motto-terminal .mt-display { position: relative; padding: 28px 24px; min-height: 90px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; overflow: hidden; }
+        .motto-terminal .mt-text { font-family: 'Courier New', monospace; font-size: 0.95rem; color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.5); position: relative; z-index: 2; line-height: 1.6; }
+        .motto-terminal .mt-cursor { display: inline-block; width: 10px; height: 1.1em; background: #00ff41; vertical-align: text-bottom; margin-left: 2px; animation: mtBlink 0.6s step-end infinite; box-shadow: 0 0 8px rgba(0,255,65,0.8); }
+        @keyframes mtBlink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+        .mt-rain { position: absolute; font-family: 'Courier New',monospace; color: rgba(0,255,65,0.12); font-size: 0.6rem; pointer-events: none; z-index: 1; white-space: nowrap; animation: mtRain linear infinite; }
+        @keyframes mtRain { 0% { transform: translateY(-100%); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(400px); opacity: 0; } }
+
+        /* ── STATUS BANNER ── */
+        .status-banner {
+            margin-top: 20px;
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 10px 16px;
+            display: flex; align-items: center; gap: 10px;
+            font-family: var(--font-mono); font-size: 0.68rem;
+            letter-spacing: 1px; color: var(--text);
+        }
+        .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: statusPulse 2s ease-in-out infinite; }
+        @keyframes statusPulse { 0%,100% { opacity: 1; box-shadow: 0 0 8px var(--green); } 50% { opacity: 0.5; box-shadow: 0 0 20px var(--green); } }
+        .status-text { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 1.5px; color: var(--text); }
+        .status-text span { color: var(--cyan); }
+
+        /* ── TIMELINE ── */
+        .timeline { position: relative; padding: 0 0 0 40px; margin-left: 20px; }
+        .timeline::before {
+            content: ''; position: absolute; left: 18px; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(to bottom, var(--cyan), var(--purple), var(--pink));
+            opacity: 0.3;
+        }
+        .tl-item { position: relative; margin-bottom: 28px; padding-left: 28px; }
+        .tl-item::before {
+            content: ''; position: absolute; left: -23px; top: 6px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--bg-deep); border: 2px solid var(--cyan);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+            z-index: 1;
+        }
+        .tl-date { font-family: var(--font-mono); font-size: 0.75rem; color: var(--cyan); letter-spacing: 2px; margin-bottom: 4px; }
+        .tl-title { font-size: 1rem; font-weight: 600; margin-bottom: 2px; color: var(--text); }
+        .tl-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
+
+        /* ── TIMELINE: 分叉（从头学习 ⇄ GAN 研究 ⇄ 生成式 AI，三条并行轨） ── */
+        .tl-fork-wrap {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            column-gap: 26px;
+            padding-top: 34px;
+        }
+        .tl-fork-wrap::after {              /* 分叉连线：主线 → 各分支轨 */
+            content: ''; position: absolute;
+            left: -22px; top: 33px;
+            width: calc(100% + 22px); height: 2px;
+            background: linear-gradient(90deg, var(--pink), var(--cyan));
+            opacity: 0.5; border-radius: 2px;
+        }
+        .tl-fork-col--gan { position: relative; }
+        .tl-fork-col--gan::before {         /* GAN 轨竖线 */
+            content: ''; position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(to bottom, var(--pink), var(--purple));
+            opacity: 0.45;
+        }
+        .tl-fork-col--gen { position: relative; }
+        .tl-fork-col--gen::before {         /* 生成式轨竖线 */
+            content: ''; position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(to bottom, var(--cyan), var(--blue));
+            opacity: 0.45;
+        }
+        .tl-fork-col--gen .tl-fork-head { color: var(--cyan); }
+        .tl-fork-col--gen .tl-fork-link { color: var(--cyan); border-color: rgba(0, 229, 255, 0.35); }
+        .tl-fork-col--gen .tl-fork-link:hover { border-color: var(--cyan); box-shadow: 0 0 12px rgba(0, 229, 255, 0.25); }
+        .tl-fork-col--gen .tl-fork-item::before { border-color: var(--cyan); box-shadow: 0 0 8px rgba(0, 229, 255, 0.45); }
+        .tl-fork-col--gen .tl-fork-item .tl-date { color: var(--cyan); }
+        .tl-fork-head {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            padding-left: 26px;
+            font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 1px;
+            color: var(--pink); margin-bottom: 16px;
+        }
+        .tl-fork-head em { font-style: normal; font-size: 0.7rem; letter-spacing: 0; color: var(--text-dim); }
+        .tl-fork-link {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 1px;
+            color: var(--pink); text-decoration: none;
+            border: 1px solid rgba(255, 45, 117, 0.35);
+            padding: 3px 10px; border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .tl-fork-link:hover { border-color: var(--pink); box-shadow: 0 0 12px rgba(255, 45, 117, 0.25); }
+        .tl-fork-item { position: relative; padding-left: 26px; margin-bottom: 20px; }
+        .tl-fork-item:last-child { margin-bottom: 0; }
+        .tl-fork-item::before {
+            content: ''; position: absolute; left: -5px; top: 5px;
+            width: 9px; height: 9px; border-radius: 50%;
+            background: var(--bg-deep); border: 2px solid var(--pink);
+            box-shadow: 0 0 8px rgba(255, 45, 117, 0.45);
+            z-index: 1;
+        }
+        .tl-fork-item .tl-date { color: var(--pink); }
+
+        @media (max-width: 768px) {
+            .timeline { margin-left: 0; padding-left: 30px; }
+            .timeline::before { left: 13px; }
+            .tl-item::before { left: -18px; width: 10px; height: 10px; }
+            .tl-fork-wrap { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: 0; }
+            .tl-fork-wrap::after { display: none; }
+            .tl-fork-col--gan, .tl-fork-col--gen { margin-left: 24px; }
+            .tl-fork-col--gan::after {      /* 窄屏改为上下堆叠，用肘形连线衔接 */
+                content: ''; position: absolute;
+                left: -41px; top: -24px;
+                width: 41px; height: 24px;
+                border-left: 2px solid var(--pink);
+                border-bottom: 2px solid var(--pink);
+                border-bottom-left-radius: 16px;
+                opacity: 0.6;
+            }
+            .tl-fork-col--gen::after {
+                content: ''; position: absolute;
+                left: -41px; top: -24px;
+                width: 41px; height: 24px;
+                border-left: 2px solid var(--cyan);
+                border-bottom: 2px solid var(--cyan);
+                border-bottom-left-radius: 16px;
+                opacity: 0.6;
+            }
+            .tl-fork-item::before { width: 8px; height: 8px; }
+        }
+
+        .typewriter { font-size: 1.1rem; color: var(--text-dim); min-height: 1.8em; margin-bottom: 28px; opacity: 0; animation: fadeSlideUp 0.6s 0.6s forwards; }
+        .typewriter .cursor { display: inline-block; width: 2px; height: 1.2em; background: var(--cyan); margin-left: 4px; vertical-align: text-bottom; animation: blink 0.8s infinite; }
+
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 28px; border-radius: 4px; text-decoration: none;
+            font-family: var(--font-mono); font-weight: 600; font-size: 0.85rem;
+            letter-spacing: 1px; transition: all 0.3s; border: 1px solid var(--cyan);
+            color: var(--cyan); background: rgba(0, 229, 255, 0.06);
+            opacity: 0; animation: fadeSlideUp 0.6s 0.8s forwards;
+        }
+        .btn:hover { background: rgba(0, 229, 255, 0.15); box-shadow: 0 0 25px rgba(0, 229, 255, 0.25); transform: translateY(-2px); }
+        .btn.primary { background: linear-gradient(135deg, var(--cyan), #0097ea); color: #000; border: none; }
+        .btn.primary:hover { box-shadow: 0 0 30px rgba(0, 229, 255, 0.4); }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar-wrap {
+            position: relative; width: 240px; height: 240px;
+        }
+        .avatar-frame {
+            position: relative; z-index: 2;
+            width: 100%; height: 100%; border-radius: 50%;
+            background: #050914; overflow: hidden;
+            border: 2px solid rgba(0, 229, 255, 0.4);
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.2);
+            animation: float 4s ease-in-out infinite;
+        }
+        .avatar-stage {
+            position: absolute; inset: 0;
+            animation: avatarReveal 1.5s cubic-bezier(0.65, 0, 0.35, 1) both;
+        }
+        .avatar-slide {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;
+            opacity: 0; transition: opacity 1.1s ease;
+        }
+        .avatar-slide.active { opacity: 1; }
+        .avatar-frame { cursor: pointer; }
+        .avatar-fx { position: absolute; inset: 0; }
+        .avatar-fx.glitch { animation: avatarGlitch 0.42s steps(3, end) 1; }
+        @keyframes avatarGlitch {
+            0%   { transform: translate(0, 0); filter: none; }
+            20%  { transform: translate(-3px, 1px); filter: hue-rotate(55deg) saturate(1.8) contrast(1.15); }
+            40%  { transform: translate(3px, -2px); filter: hue-rotate(-55deg) saturate(1.6); }
+            60%  { transform: translate(-2px, 2px); filter: hue-rotate(35deg); }
+            80%  { transform: translate(2px, -1px); filter: none; }
+            100% { transform: translate(0, 0); filter: none; }
+        }
+        .avatar-pulse {
+            position: absolute; top: 50%; left: 50%;
+            width: 240px; height: 240px; margin: -120px 0 0 -120px;
+            border-radius: 50%; border: 2px solid rgba(0, 229, 255, 0.85);
+            pointer-events: none; z-index: 5;
+            animation: avatarPulse 0.75s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+        }
+        @keyframes avatarPulse {
+            from { transform: scale(0.62); opacity: 0.95; }
+            to   { transform: scale(1.7);  opacity: 0; }
+        }
+        .click-ripple {
+            position: fixed; width: 56px; height: 56px; margin: -28px 0 0 -28px;
+            border-radius: 50%; border: 1.5px solid rgba(0, 229, 255, 0.9);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.6), inset 0 0 14px rgba(0, 229, 255, 0.35);
+            pointer-events: none; z-index: 9999;
+            animation: clickRipple 0.66s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+        }
+        @keyframes clickRipple {
+            from { transform: scale(0.1); opacity: 1; }
+            to   { transform: scale(1.55); opacity: 0; }
+        }
+        .click-burst { position: fixed; width: 0; height: 0; pointer-events: none; z-index: 10000; }
+        .click-bit {
+            position: absolute; left: 0; top: 0;
+            font-family: var(--font-mono), monospace; font-weight: 700; line-height: 1;
+            opacity: 0; will-change: transform, opacity;
+            animation: bitFly 0.75s cubic-bezier(0.15, 0.75, 0.35, 1) forwards;
+        }
+        @keyframes bitFly {
+            0%   { transform: translate(-50%, -50%) scale(0.35); opacity: 0; }
+            22%  { opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.05); opacity: 0; }
+        }
+        @keyframes avatarReveal {
+            from { clip-path: circle(0% at 50% 50%); opacity: 0; }
+            to { clip-path: circle(75% at 50% 50%); opacity: 1; }
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
+        .orbit-ring {
+            position: absolute; top: 50%; left: 50%; border-radius: 50%;
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        .orbit-ring:nth-child(2) { width: 270px; height: 270px; animation: spin 12s linear infinite; }
+        .orbit-ring:nth-child(3) { width: 300px; height: 300px; animation: spin 18s linear infinite reverse; border-color: rgba(180, 74, 255, 0.2); }
+        .orbit-ring:nth-child(4) { width: 330px; height: 250px; animation: spin 14s linear infinite; border-color: rgba(68, 138, 255, 0.2); border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; }
+
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @keyframes spin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        /* ── ABOUT ── */
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+        .about-text p { margin-bottom: 12px; color: var(--text-dim); }
+        .stat-panels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .stat-panel {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 28px 16px; text-align: center;
+            transition: all 0.4s;
+        }
+        .stat-panel:hover { border-color: var(--cyan); box-shadow: var(--glow); transform: translateY(-4px); }
+        .stat-panel .stat-value { font-family: var(--font-mono); font-size: 2.2rem; font-weight: 700; color: var(--cyan); text-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+        .stat-panel .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-top: 6px; letter-spacing: 1px; }
+
+        /* ── GLASS CARD ── */
+        .glass-card {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 30px;
+            transition: all 0.4s; position: relative; overflow: hidden;
+        }
+        .glass-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.4), transparent);
+            opacity: 0; transition: opacity 0.4s;
+        }
+        .glass-card:hover { border-color: var(--cyan); box-shadow: var(--glow); transform: translateY(-6px); }
+        .glass-card:hover::before { opacity: 1; }
+
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+
+        /* ── TOOLS ── */
+        .tool-icon {
+            width: 56px; height: 56px; border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; margin-bottom: 16px;
+            background: rgba(0, 229, 255, 0.08); color: var(--cyan);
+        }
+        .glass-card h3 { font-family: var(--font-mono); font-size: 1rem; letter-spacing: 1px; margin-bottom: 8px; color: var(--cyan); }
+        .glass-card p { color: var(--text-dim); font-size: 0.9rem; line-height: 1.6; }
+
+        /* ── SKILLS ── */
+        .skill-bars { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .skill-bar-item { margin-bottom: 4px; }
+        .skill-bar-item .label { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.85rem; font-family: var(--font-mono); letter-spacing: 1px; }
+        .skill-bar-item .label span:last-child { color: var(--cyan); }
+        .skill-track { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+        .skill-fill { height: 100%; border-radius: 2px; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .skill-fill.cyan { background: linear-gradient(90deg, var(--cyan), #0097ea); box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
+        .skill-fill.purple { background: linear-gradient(90deg, var(--purple), #7c3aed); box-shadow: 0 0 10px rgba(180, 74, 255, 0.4); }
+        .skill-fill.pink { background: linear-gradient(90deg, var(--pink), #f43f5e); box-shadow: 0 0 10px rgba(255, 45, 117, 0.4); }
+        .skill-fill.green { background: linear-gradient(90deg, var(--green), #22c55e); box-shadow: 0 0 10px rgba(0, 230, 118, 0.4); }
+
+        /* ── PROJECTS ── */
+        .projects-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .proj-card {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: var(--radius); overflow: hidden;
+            transition: all 0.4s;
+        }
+        .proj-card:hover { border-color: var(--cyan); box-shadow: 0 0 30px rgba(0, 229, 255, 0.12); transform: translateY(-6px); }
+        .proj-header {
+            height: 130px; display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: white; position: relative; overflow: hidden;
+        }
+        .proj-header > i,
+        .proj-header > .proj-num { transition: opacity 0.35s, transform 0.35s; }
+        .proj-card:hover .proj-header > i { opacity: 0; transform: scale(0.5); }
+        .proj-card:hover .proj-header > .proj-num { opacity: 0; }
+        .proj-preview {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 6px;
+            opacity: 0; transition: opacity 0.4s; pointer-events: none;
+        }
+        .proj-card:hover .proj-preview { opacity: 1; }
+        .preview-label {
+            font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 2px;
+            color: rgba(255,255,255,0.7);
+        }
+        /* Preview: scanning line (card 1) */
+        .preview-scan { position: relative; width: 70px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; }
+        .scan-line { position: absolute; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.7); animation: scanSweep 1.8s ease-in-out infinite; box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+        @keyframes scanSweep { 0%,100% { top: 0%; } 50% { top: 95%; } }
+        /* Preview: digit flicker (card 2) */
+        .preview-digits { font-family: var(--font-mono); font-size: 2rem; font-weight: 700; color: rgba(255,255,255,0.9); }
+        .digit-span { display: inline-block; animation: digitChange 1.2s steps(1) infinite; }
+        .digit-span:nth-child(2) { animation-delay: 0.15s; }
+        .digit-span:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes digitChange { 0% { opacity: 0; } 12% { opacity: 1; } 24% { opacity: 1; } 36% { opacity: 0; } 100% { opacity: 0; } }
+        /* Preview: weather (card 3) */
+        .preview-weather { display: flex; align-items: center; gap: 12px; }
+        .preview-weather i { font-size: 1.6rem; animation: weatherPulse 2s ease-in-out infinite; }
+        .temp-display { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; animation: tempShift 3s ease-in-out infinite; }
+        @keyframes weatherPulse { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+        @keyframes tempShift { 0%,100% { color: #f97316; } 25% { color: #3b82f6; } 50% { color: #22c55e; } 75% { color: #f97316; } }
+        /* Preview: detection box (card 4) */
+        .preview-detect { position: relative; width: 64px; height: 48px; display: flex; align-items: center; justify-content: center; }
+        .preview-detect i { position: relative; z-index: 1; }
+        .detect-box { position: absolute; width: 100%; height: 100%; border: 2px solid rgba(255,255,255,0.5); border-radius: 4px; animation: detectPulse 1.5s ease-in-out infinite; }
+        .detect-corner { position: absolute; width: 10px; height: 10px; border-color: rgba(255,255,255,0.9); border-style: solid; animation: cornerFlash 1.5s ease-in-out infinite; }
+        .detect-corner.tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .detect-corner.tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+        .detect-corner.bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+        .detect-corner.br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+        @keyframes detectPulse { 0%,100% { border-color: rgba(255,255,255,0.3); } 50% { border-color: rgba(255,255,255,0.9); } }
+        @keyframes cornerFlash { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+        /* Preview: GAN pixel generation (card 8) */
+        .preview-gan { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; width: 54px; height: 54px; }
+        .gan-px { background: rgba(255,255,255,0.92); border-radius: 1px; animation: ganPop 2.4s steps(1) infinite; }
+        @keyframes ganPop { 0% { opacity: 0.12; } 45% { opacity: 0.95; } 100% { opacity: 0.12; } }
+        .proj-body { padding: 20px 22px 22px; }
+        .proj-body h3 { font-family: var(--font-mono); font-size: 0.95rem; letter-spacing: 1px; margin-bottom: 6px; color: var(--text); }
+        .proj-body > p { color: var(--text-dim); font-size: 0.84rem; margin-bottom: 12px; line-height: 1.5; }
+        .proj-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+        .proj-tag {
+            padding: 2px 10px; border-radius: 10px; font-size: 0.7rem;
+            border: 1px solid var(--border); color: var(--text-dim);
+            font-family: var(--font-mono); letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+        .proj-card:hover .proj-tag { border-color: rgba(0, 229, 255, 0.25); color: var(--cyan); }
+        .proj-link {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 14px; border-radius: 4px; text-decoration: none;
+            font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 1px;
+            color: white; transition: all 0.3s;
+        }
+        .proj-link:hover { filter: brightness(1.2); transform: translateX(3px); }
+
+        /* ── HOBBIES ── */
+        .hobby-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .hobby-card {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 28px 16px; text-align: center;
+            transition: all 0.4s;
+        }
+        .hobby-card:hover { border-color: var(--cyan); box-shadow: var(--glow); transform: translateY(-6px); }
+        .hobby-card .hobby-icon { font-size: 2.2rem; margin-bottom: 14px; }
+        .hobby-card h3 { font-family: var(--font-mono); font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 6px; color: var(--cyan); }
+        .hobby-card p { font-size: 0.8rem; color: var(--text-dim); }
+
+        /* ── SOCIAL ── */
+        .social-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .social-card {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 32px; text-align: center;
+            transition: all 0.4s;
+        }
+        .social-card:hover { border-color: var(--cyan); box-shadow: var(--glow); transform: translateY(-6px); }
+        .social-icon-lg { font-size: 2.8rem; margin-bottom: 16px; }
+        .social-card h3 { font-family: var(--font-mono); font-size: 1rem; letter-spacing: 2px; margin-bottom: 8px; color: var(--cyan); }
+        .social-card p { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 14px; }
+        .link-neon {
+            display: inline-flex; align-items: center; gap: 6px; color: var(--cyan);
+            text-decoration: none; font-family: var(--font-mono); font-size: 0.8rem;
+            letter-spacing: 1px; transition: all 0.3s;
+        }
+        .link-neon:hover { text-shadow: 0 0 10px var(--cyan); }
+
+        /* ── CONTACT ── */
+        .contact-grid { max-width: 560px; margin: 0 auto; }
+        .contact-info p.intro { color: var(--text-dim); margin-bottom: 24px; }
+        .ci-item { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+        .ci-item i {
+            width: 42px; height: 42px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 1rem;
+            background: rgba(0, 229, 255, 0.08); color: var(--cyan);
+            border: 1px solid var(--border);
+        }
+        .ci-item h3 { font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 1px; color: var(--cyan); margin-bottom: 2px; }
+        .ci-item p { color: var(--text-dim); font-size: 0.9rem; }
+        .contact-socials { display: flex; gap: 12px; margin-top: 20px; }
+        .contact-socials a {
+            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--border); color: var(--text-dim); text-decoration: none;
+            transition: all 0.3s;
+        }
+        .contact-socials a:hover { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 12px rgba(0, 229, 255, 0.2); transform: translateY(-3px); }
+
+        /* ── BACK TO TOP ── */
+        .back-to-top {
+            position: fixed; bottom: 30px; right: 30px; z-index: 500;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--bg-surface); border: 1px solid var(--cyan);
+            color: var(--cyan); cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1rem; opacity: 0; transform: translateY(20px);
+            transition: all 0.4s; pointer-events: none;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+        }
+        .back-to-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .back-to-top:hover { box-shadow: 0 0 30px rgba(0, 229, 255, 0.5); transform: translateY(-4px); }
+
+        /* ── FOOTER ── */
+        footer {
+            padding: 36px 0; text-align: center; border-top: 1px solid var(--border);
+            position: relative; z-index: 2;
+        }
+        footer p { color: var(--text-dim); font-size: 0.8rem; font-family: var(--font-mono); letter-spacing: 2px; }
+
+        /* ── REVEAL ON SCROLL ── */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-s1 { transition-delay: 0.08s; }
+        .reveal-s2 { transition-delay: 0.16s; }
+        .reveal-s3 { transition-delay: 0.24s; }
+        .reveal-s5 { transition-delay: 0.40s; }
+
+        /* ── RESPONSIVE ── */
+        /* 中等宽度：导航项较多，提前切换为汉堡菜单，避免横向溢出 */
+        @media (max-width: 1280px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 62px; left: -100%; width: 100%;
+                flex-direction: column; background: rgba(5, 9, 20, 0.97);
+                backdrop-filter: blur(20px); text-align: center;
+                padding: 16px 0; gap: 4px; transition: left 0.3s;
+                border-bottom: 1px solid var(--border);
+                max-height: calc(100vh - 62px); overflow-y: auto;
+            }
+            .nav-links.active { left: 0; }
+            .nav-links li { margin: 0; }
+            .nav-links a { display: block; padding: 10px 0; font-size: 0.9rem; }
+        }
+
+        @media (max-width: 768px) {
+            .hero .container { flex-direction: column; text-align: center; }
+            .hero h1 { font-size: 2rem; }
+            .about-grid { grid-template-columns: 1fr; }
+            .projects-grid, .social-grid { grid-template-columns: 1fr; }
+            .hobby-grid { grid-template-columns: repeat(2, 1fr); }
+            .cards-grid { grid-template-columns: 1fr; }
+            .stat-panels { grid-template-columns: 1fr; }
+            .skill-bars { grid-template-columns: 1fr; }
+
+            .avatar-wrap { width: 180px; height: 180px; }
+            .orbit-ring:nth-child(2) { width: 210px; height: 210px; }
+            .orbit-ring:nth-child(3) { width: 240px; height: 240px; }
+            .orbit-ring:nth-child(4) { width: 260px; height: 200px; }
+
+            .section-title { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="noise-overlay"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <i class="fas fa-terminal"></i>
+                    MONEYFOREVER
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#home" class="active">HOME</a></li>
+                    <li><a href="#about">ABOUT</a></li>
+                    <li><a href="#timeline">TIMELINE</a></li>
+                    <li><a href="#tools">TOOLS</a></li>
+                    <li><a href="#skills">SKILLS</a></li>
+                    <li><a href="#social">SOCIAL</a></li>
+                    <li><a href="#hobbies">HOBBIES</a></li>
+                    <li><a href="#projects">PROJECTS</a></li>
+                    <li><a href="blog/index.html">BLOG</a></li>
+                    <li><a href="#contact">CONTACT</a></li>
+                </ul>
+                <div style="display:flex;align-items:center;">
+                    <a href="index.html" class="theme-toggle" title="中文版" aria-label="中文版" style="text-decoration:none;font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.04em;">中文</a>
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="hamburger" id="hamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- HOME -->
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <p class="hero-greeting">&gt; INITIALIZING_SYSTEM</p>
+                    <h1>Hi, I'm <span class="highlight">MoneyForever</span></h1>
+                    <p class="typewriter"><span id="typewriter-text"></span><span class="cursor"></span></p>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <a href="#projects" class="btn primary">View projects <i class="fas fa-chevron-right"></i></a>
+                        <a href="#contact" class="btn">Contact me <i class="fas fa-paper-plane"></i></a>
+                    </div>
+                    <div class="motto-terminal reveal">
+                        <div class="mt-header">
+                            <span class="mt-dot r"></span><span class="mt-dot y"></span><span class="mt-dot g"></span>
+                            motto.sys — bash — 80×24
+                        </div>
+                        <div class="mt-display" id="mtDisplay">
+                            <span class="mt-text" id="mtText">Talk is cheap. Show me the code.</span>
+                            <span class="mt-cursor"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="avatar-wrap">
+                        <div class="orbit-ring"></div>
+                        <div class="orbit-ring"></div>
+                        <div class="orbit-ring"></div>
+                                                                                                                                                                                                <div class="avatar-frame" id="avatarFrame">
+                            <div class="avatar-stage" id="avatarStage">
+                                <div class="avatar-fx" id="avatarFx">
+                                    <img class="avatar-slide active" src="avatars/ali-1.jpg" alt="Ali">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="status-banner">
+                        <div class="status-dot"></div>
+                        <span class="status-text"><span>&gt; CURRENT_STATUS:</span> Rebuilding deep learning foundations</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="about">
+            <div class="container">
+                <h2 class="section-title reveal"><span>01.</span> About</h2>
+                <div class="about-grid">
+                    <div class="about-text reveal">
+                        <p>Second-year Software Engineering student at UESTC.</p>
+                        <p>Still learning — feedback welcome. Currently rebuilding deep learning fundamentals from the ground up.</p>
+                        <a href="https://github.com/lucky-money-account" target="_blank" class="btn" style="margin-top:12px;">GitHub Profile <i class="fas fa-user"></i></a>
+                    </div>
+                    <div class="stat-panels reveal">
+                        <div class="stat-panel">
+                            <div class="stat-value" data-target="1">1</div>
+                            <div class="stat-label">Years coding</div>
+                        </div>
+                        <div class="stat-panel">
+                            <div class="stat-value" data-target="9">0</div>
+                            <div class="stat-label">Projects shipped</div>
+                        </div>
+                        <div class="stat-panel">
+                            <div class="stat-value">∞</div>
+                            <div class="stat-label">Curiosity</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TIMELINE -->
+        <section id="timeline">
+            <div class="container">
+                <h2 class="section-title reveal"><span>02.</span> Learning path</h2>
+                <div class="timeline">
+                    <div class="tl-item reveal">
+                        <div class="tl-date">2025.09</div>
+                        <div class="tl-title">Admitted to UESTC Software Engineering</div>
+                        <div class="tl-desc">The journey begins — exploring computing from zero.</div>
+                    </div>
+                    <div class="tl-item reveal">
+                        <div class="tl-date">2025.11</div>
+                        <div class="tl-title">First steps in machine learning</div>
+                        <div class="tl-desc">Learned the basics of supervised and unsupervised learning.</div>
+                    </div>
+                    <div class="tl-item reveal">
+                        <div class="tl-date">2025.12</div>
+                        <div class="tl-title">First steps in computer vision</div>
+                        <div class="tl-desc">Image processing, OpenCV and first vision exercises.</div>
+                    </div>
+                    <div class="tl-item reveal">
+                        <div class="tl-date">2026.03</div>
+                        <div class="tl-title">Systematic deep learning (PBLF)</div>
+                        <div class="tl-desc">Project-driven study of PyTorch, neural networks and training.</div>
+                    </div>
+                    <div class="tl-item reveal">
+                        <div class="tl-date">2026.05</div>
+                        <div class="tl-title">Shipped several practice projects</div>
+                        <div class="tl-desc">Image classification, weather forecasting and an object-recognition system.</div>
+                    </div>
+                    <!-- 分叉点：此后分为「从头学习」与「GAN 研究」两条并行轨 -->
+                    <div class="tl-fork-wrap reveal">
+                        <div class="tl-fork-col tl-fork-col--main">
+                            <div class="tl-item">
+                                <div class="tl-date">2026.08</div>
+                                <div class="tl-title">Rebuilding deep learning foundations</div>
+                                <div class="tl-desc">Back to basics — rebuilding the theory from the ground up.</div>
+                            </div>
+                        </div>
+                        <div class="tl-fork-col tl-fork-col--gan">
+                            <div class="tl-fork-head">
+                                <i class="fas fa-code-branch"></i>
+                                <span>Parallel track · GAN research</span>
+                                <em>Alongside the fundamentals</em>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-research" target="_blank" class="tl-fork-link">View column <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">2026.09</div>
+                                <div class="tl-title">Started the GAN research column</div>
+                                <div class="tl-desc">Starting from DCGAN with a "mother branch + one branch per project" setup, plus a self-built evaluation suite and iteration logs.</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">2026.09</div>
+                                <div class="tl-title">DCGAN · Anime portraits</div>
+                                <div class="tl-desc">Trained DCGAN on 63,565 Kaggle anime faces, generating 64×64 anime portraits from 100-dim noise.</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">2026.09</div>
+                                <div class="tl-title">DCGAN · Dogs + FID evaluation</div>
+                                <div class="tl-desc">Built a FID / MiFID / KID / IS / precision-recall suite; label smoothing and spectral normalisation took FID from 433 to 91.2.</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">2026.09</div>
+                                <div class="tl-title">CycleGAN · Black ⇄ blonde hair translation</div>
+                                <div class="tl-desc">Unpaired translation: CelebA split by hair colour into two domains (78,449 images), learned with cycle-consistency — no paired data needed. Pipeline validated; training and tuning in progress.</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">Ongoing</div>
+                                <div class="tl-title">Roadmap · WGAN / CGAN / latent space</div>
+                                <div class="tl-desc">Next: WGAN-GP for stability, CGAN conditional generation, latent-space interpolation and high-resolution ideas.</div>
+                            </div>
+                        </div>
+                        <div class="tl-fork-col tl-fork-col--gen">
+                            <div class="tl-fork-head">
+                                <i class="fas fa-diagram-project"></i>
+                                <span>Parallel track · Generative AI</span>
+                                <em>VAE → Hierarchical VAE → VQ-VAE → Transformer → VQ-GAN → Diffusion</em>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/VAE" target="_blank" class="tl-fork-link">VAE column <i class="fas fa-arrow-right"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/Diffusion" target="_blank" class="tl-fork-link">Diffusion column <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">2026.09 · Done</div>
+                                <div class="tl-title">VAE · Variational autoencoder</div>
+                                <div class="tl-desc">Derived ELBO / reparameterisation / closed-form Gaussian KL, trained on a glasses dataset and edited latent-space attributes (add / remove glasses).</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">Ongoing</div>
+                                <div class="tl-title">Hierarchical VAE (HVAE)</div>
+                                <div class="tl-desc">Extended ELBO to multiple latent layers — the mathematical bridge to diffusion.</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">Planned</div>
+                                <div class="tl-title">VQ-VAE · Discrete codebook</div>
+                                <div class="tl-desc">Nearest-neighbour quantisation, straight-through estimation and commitment loss.</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">Planned</div>
+                                <div class="tl-title">Transformer · From scratch</div>
+                                <div class="tl-desc">Self-attention, multi-head and positional encoding for a VQ-GAN prior.</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">Planned</div>
+                                <div class="tl-title">VQ-GAN</div>
+                                <div class="tl-desc">VQ-VAE + adversarial + perceptual losses + a Transformer prior for high-fidelity generation.</div>
+                            </div>
+                            <div class="tl-fork-item">
+                                <div class="tl-date">2026.11 · Done</div>
+                                <div class="tl-title">Diffusion · DDPM → CFG → Latent</div>
+                                <div class="tl-desc">Built unconditional DDPM (U-Net + ε prediction) from scratch, added class conditioning and CFG, a 4× SRNet upsampler, and a mini Latent Diffusion (VAE latent space + text cross-attention).</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TOOLS -->
+        <section id="tools">
+            <div class="container">
+                <h2 class="section-title reveal"><span>03.</span> Tools</h2>
+                <div class="cards-grid">
+                    <div class="glass-card reveal">
+                        <div class="tool-icon"><i class="fas fa-code"></i></div>
+                        <h3>VSCode</h3>
+                        <p>A powerful editor with support for many languages and extensions.</p>
+                    </div>
+                    <div class="glass-card reveal">
+                        <div class="tool-icon"><i class="fas fa-cube"></i></div>
+                        <h3>Anaconda</h3>
+                        <p>Python data-science platform with environment management and common libraries.</p>
+                    </div>
+                    <div class="glass-card reveal">
+                        <div class="tool-icon"><i class="fas fa-flask"></i></div>
+                        <h3>Jupyter Notebook</h3>
+                        <p>Interactive environment for deep-learning experiments, visualisation and notes.</p>
+                    </div>
+                    <div class="glass-card reveal">
+                        <div class="tool-icon"><i class="fab fa-git-alt"></i></div>
+                        <h3>Git & GitHub</h3>
+                        <p>Version control and code hosting — the backbone of collaborative work.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SKILLS -->
+        <section id="skills">
+            <div class="container">
+                <h2 class="section-title reveal"><span>04.</span> Skills</h2>
+                <div class="skill-bars reveal">
+                    <div class="glass-card">
+                        <div class="skill-bar-item">
+                            <div class="label"><span>Python</span><span>85%</span></div>
+                            <div class="skill-track"><div class="skill-fill cyan" style="width:0%" data-width="85%"></div></div>
+                        </div>
+                        <div class="skill-bar-item" style="margin-top:14px;">
+                            <div class="label"><span>HTML / CSS / JS</span><span>70%</span></div>
+                            <div class="skill-track"><div class="skill-fill purple" style="width:0%" data-width="70%"></div></div>
+                        </div>
+                        <div class="skill-bar-item" style="margin-top:14px;">
+                            <div class="label"><span>PyTorch</span><span>60%</span></div>
+                            <div class="skill-track"><div class="skill-fill pink" style="width:0%" data-width="60%"></div></div>
+                        </div>
+                        <div class="skill-bar-item" style="margin-top:14px;">
+                            <div class="label"><span>Git & GitHub</span><span>75%</span></div>
+                            <div class="skill-track"><div class="skill-fill green" style="width:0%" data-width="75%"></div></div>
+                        </div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="skill-bar-item">
+                            <div class="label"><span>OpenCV</span><span>65%</span></div>
+                            <div class="skill-track"><div class="skill-fill green" style="width:0%" data-width="65%"></div></div>
+                        </div>
+                        <div class="skill-bar-item" style="margin-top:14px;">
+                            <div class="label"><span>TensorFlow / Keras</span><span>55%</span></div>
+                            <div class="skill-track"><div class="skill-fill purple" style="width:0%" data-width="55%"></div></div>
+                        </div>
+                        <div class="skill-bar-item" style="margin-top:14px;">
+                            <div class="label"><span>Flask</span><span>50%</span></div>
+                            <div class="skill-track"><div class="skill-fill cyan" style="width:0%" data-width="50%"></div></div>
+                        </div>
+                        <div class="skill-bar-item" style="margin-top:14px;">
+                            <div class="label"><span>Streamlit</span><span>60%</span></div>
+                            <div class="skill-track"><div class="skill-fill pink" style="width:0%" data-width="60%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SOCIAL -->
+        <section id="social">
+            <div class="container">
+                <h2 class="section-title reveal"><span>05.</span> Connect</h2>
+                <div class="social-grid">
+                    <div class="social-card reveal">
+                        <div class="social-icon-lg"><i class="fab fa-github" style="color:#fff;"></i></div>
+                        <h3>GitHub</h3>
+                        <p>Repositories and open-source projects.</p>
+                        <a href="https://github.com/lucky-money-account" target="_blank" class="link-neon">Visit profile <i class="fas fa-arrow-right"></i></a>
+                        <img src="https://ghchart.rshah.org/lucky-money-account" alt="GitHub Contributions" style="width:100%;margin-top:14px;border-radius:6px;opacity:0.85;" loading="lazy">
+                    </div>
+                    <div class="social-card reveal">
+                        <div class="social-icon-lg"><i class="fab fa-bilibili" style="color:#fb7299;"></i></div>
+                        <h3>Bilibili</h3>
+                        <p>Follow me on Bilibili.</p>
+                        <span class="link-neon">ID: 381827644</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HOBBIES -->
+        <section id="hobbies">
+            <div class="container">
+                <h2 class="section-title reveal"><span>06.</span> Hobbies</h2>
+                <div class="hobby-grid">
+                    <div class="hobby-card reveal">
+                        <div class="hobby-icon" style="color:var(--cyan);"><i class="fas fa-code"></i></div>
+                        <h3>Coding</h3>
+                        <p>Exploring new tech and enjoying the process of solving problems.</p>
+                    </div>
+                    <div class="hobby-card reveal">
+                        <div class="hobby-icon" style="color:var(--purple);"><i class="fas fa-book"></i></div>
+                        <h3>Reading</h3>
+                        <p>Tech books, sci-fi and history — always expanding the map.</p>
+                    </div>
+                    <div class="hobby-card reveal">
+                        <div class="hobby-icon" style="color:var(--pink);"><i class="fas fa-hiking"></i></div>
+                        <h3>Hiking</h3>
+                        <p>Enjoying nature and finding new views.</p>
+                    </div>
+                    <div class="hobby-card reveal">
+                        <div class="hobby-icon" style="color:var(--green);"><i class="fas fa-gamepad"></i></div>
+                        <h3>Minecraft</h3>
+                        <p>Always up for a co-op session.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJECTS -->
+        <section id="projects">
+            <div class="container">
+                <h2 class="section-title reveal"><span>07.</span> Projects</h2>
+                <div class="projects-grid">
+                    <div class="proj-card reveal reveal-s1">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#a855f7,#6366f1);">
+                            <span class="proj-num">01</span>
+                            <i class="fas fa-image fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-scan">
+                                    <i class="fas fa-image" style="position:relative;z-index:1;"></i>
+                                    <div class="scan-line"></div>
+                                </div>
+                                <span class="preview-label">SCANNING_FRAME</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>Image transforms and enhancement</h3>
+                            <p>Frame-by-frame grayscale, resize, Gaussian denoising and histogram equalisation, with single-frame comparisons.</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">Python</span>
+                                <span class="proj-tag">OpenCV</span>
+                                <span class="proj-tag">Image processing</span>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/PBLF-Image-Processing/video_processing_modified.ipynb" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#a855f7,#6366f1);">View notebook <i class="fas fa-arrow-right"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/PBLF-Image-Processing/README.md" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#a855f7,#6366f1);">Study notes <i class="fas fa-book"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="proj-card reveal reveal-s2">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#f97316,#ef4444);">
+                            <span class="proj-num">02</span>
+                            <i class="fas fa-robot fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-digits">
+                                    <span class="digit-span">4</span><span class="digit-span">7</span><span class="digit-span">2</span>
+                                </div>
+                                <span class="preview-label">CLASSIFYING_MNIST</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>kNN digit recognition</h3>
+                            <p>Study notes: k-NN fundamentals, code walkthrough, accuracy analysis and cross-links to other image-processing techniques.</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">Python</span>
+                                <span class="proj-tag">scikit-learn</span>
+                                <span class="proj-tag">kNN</span>
+                                <span class="proj-tag">MNIST</span>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/kNN/learning_notes.md" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#f97316,#ef4444);">kNN notes <i class="fas fa-book"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/kNN/mnist_learning_notes.md" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#f97316,#ef4444);">MNIST notes <i class="fas fa-brain"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="proj-card reveal reveal-s3">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#3b82f6,#06b6d4);">
+                            <span class="proj-num">03</span>
+                            <i class="fas fa-cloud-sun-rain fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-weather">
+                                    <i class="fas fa-cloud-rain"></i>
+                                    <span class="temp-display">22&#176;</span>
+                                </div>
+                                <span class="preview-label">FORECASTING_ERA5</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>Weather Forcast · Southwest China forecast</h3>
+                            <p>Deep-learning weather forecasting with LSTM and Transformer models on real ERA5 data, with an interactive dashboard.</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">Python</span>
+                                <span class="proj-tag">PyTorch</span>
+                                <span class="proj-tag">LSTM</span>
+                                <span class="proj-tag">Streamlit</span>
+                                <span class="proj-tag">vibe coding</span>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <a href="https://github.com/lucky-money-account/Weather-Forcast" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#3b82f6,#06b6d4);">View project <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="proj-card reveal reveal-s4">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#22c55e,#14b8a6);">
+                            <span class="proj-num">04</span>
+                            <i class="fas fa-eye fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-detect">
+                                    <i class="fas fa-camera" style="font-size:1.4rem;"></i>
+                                    <div class="detect-box"></div>
+                                    <div class="detect-corner tl"></div>
+                                    <div class="detect-corner tr"></div>
+                                    <div class="detect-corner bl"></div>
+                                    <div class="detect-corner br"></div>
+                                </div>
+                                <span class="preview-label">DETECTING_OBJECTS</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>Intelligent object recognition system</h3>
+                            <p>Multi-mode image recognition with PyTorch and TensorFlow: objects, digits, animals and scenes.</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">Python</span>
+                                <span class="proj-tag">YOLOv8</span>
+                                <span class="proj-tag">MobileNetV2</span>
+                                <span class="proj-tag">Flask</span>
+                                <span class="proj-tag">vibe coding</span>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <a href="https://github.com/lucky-money-account/Intelligent-object-recognition" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#22c55e,#14b8a6);">View project <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="proj-card reveal reveal-s4">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#f59e0b,#d946ef);">
+                            <span class="proj-num">05</span>
+                            <i class="fas fa-paw fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-scan">
+                                    <i class="fas fa-paw" style="position:relative;z-index:1;"></i>
+                                    <div class="scan-line"></div>
+                                </div>
+                                <span class="preview-label">TRAINING_CATDOG</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>PBLF cats vs dogs classification</h3>
+                            <p>Intro course project: shallow CNN → hand-written VGG16 → pretrained VGG16 transfer learning, plus four extension experiments.</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">Python</span>
+                                <span class="proj-tag">PyTorch</span>
+                                <span class="proj-tag">VGG16</span>
+                                <span class="proj-tag">ResNet</span>
+                                <span class="proj-tag">Transfer learning</span>
+                            </div>
+                            <a href="https://github.com/lucky-money-account/PBLF-catdog-classification-experiment" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#f59e0b,#d946ef);">View project <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <!-- Project 06: DL Function Helper -->
+                    <div class="proj-card reveal reveal-s5">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#00e5ff,#448aff);">
+                            <span class="proj-num">06</span>
+                            <i class="fas fa-magnifying-glass fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-scan">
+                                    <i class="fas fa-code" style="position:relative;z-index:1;"></i>
+                                    <div class="scan-line"></div>
+                                </div>
+                                <span class="preview-label">FUNCTION LOOKUP</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>DL function helper</h3>
+                            <p>Offline deep-learning function lookup covering 196 functions across PyTorch / NumPy / Matplotlib / OpenCV / Sklearn / Pandas, with semantic search, IDE-style highlighting and a single-file executable.</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">Python</span>
+                                <span class="proj-tag">tkinter</span>
+                                <span class="proj-tag">TF-IDF</span>
+                                <span class="proj-tag">Semantic search</span>
+                                <span class="proj-tag">PyInstaller</span>
+                                <span class="proj-tag">vibe coding</span>
+                            </div>
+                            <a href="https://github.com/lucky-money-account/Deep-Learning-Function-Helper" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#00e5ff,#448aff);">View project <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <!-- Project 07: Deep Learning Notes & Practice -->
+                    <div class="proj-card reveal reveal-s5">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#b44aff,#ff2d75);">
+                            <span class="proj-num">07</span>
+                            <i class="fas fa-brain fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-scan">
+                                    <i class="fas fa-brain" style="position:relative;z-index:1;"></i>
+                                    <div class="scan-line"></div>
+                                </div>
+                                <span class="preview-label">LEARNING_D2L</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>Dive into Deep Learning · notes and practice</h3>
+                            <p>Systematic study of Dive into Deep Learning (PyTorch): chapter notes, reflections, exercises, notebooks and utility functions, covering ch02–ch06 plus a GAN chapter.</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">Python</span>
+                                <span class="proj-tag">PyTorch</span>
+                                <span class="proj-tag">Jupyter Notebook</span>
+                                <span class="proj-tag">CNN</span>
+                                <span class="proj-tag">GAN</span>
+                            </div>
+                            <a href="https://github.com/lucky-money-account/repository_for_machine_learning" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#b44aff,#ff2d75);">View project <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <!-- Project 08: GAN Research Column -->
+                    <div class="proj-card reveal reveal-s5">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#f43f5e,#8b5cf6);">
+                            <span class="proj-num">08</span>
+                            <i class="fas fa-flask fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-gan">
+                                        <span class="gan-px" style="animation-delay:0.00s"></span>
+                                        <span class="gan-px" style="animation-delay:0.12s"></span>
+                                        <span class="gan-px" style="animation-delay:0.24s"></span>
+                                        <span class="gan-px" style="animation-delay:0.36s"></span>
+                                        <span class="gan-px" style="animation-delay:0.48s"></span>
+                                        <span class="gan-px" style="animation-delay:0.60s"></span>
+                                        <span class="gan-px" style="animation-delay:0.72s"></span>
+                                        <span class="gan-px" style="animation-delay:0.84s"></span>
+                                        <span class="gan-px" style="animation-delay:0.96s"></span>
+                                        <span class="gan-px" style="animation-delay:1.08s"></span>
+                                        <span class="gan-px" style="animation-delay:1.20s"></span>
+                                        <span class="gan-px" style="animation-delay:1.32s"></span>
+                                        <span class="gan-px" style="animation-delay:1.44s"></span>
+                                        <span class="gan-px" style="animation-delay:1.56s"></span>
+                                        <span class="gan-px" style="animation-delay:1.68s"></span>
+                                        <span class="gan-px" style="animation-delay:1.80s"></span>
+                                </div>
+                                <span class="preview-label">GAN_RESEARCH</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>GAN research column</h3>
+                            <p>A GAN research series: each topic gets its own branch from the mother branch, with a self-built evaluation suite and iteration logs. Includes DCGAN anime portraits, DCGAN dogs (FID 433 → 91.2) and CycleGAN black ⇄ blonde translation.</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">PyTorch</span>
+                                <span class="proj-tag">DCGAN</span>
+                                <span class="proj-tag">CycleGAN</span>
+                                <span class="proj-tag">FID / MiFID</span>
+                                <span class="proj-tag">Spectral norm</span>
+                                <span class="proj-tag">Jupyter Notebook</span>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-research" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#f43f5e,#8b5cf6);">Column overview <i class="fas fa-diagram-project"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-research/GAN/DCGAN-anime-faces" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);">Anime portrait generation <i class="fas fa-user-astronaut"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-dog-fid/GAN/dog-fid" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#ec4899,#f43f5e);">Dog generation + FID <i class="fas fa-paw"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/GAN-CycleGAN/GAN/CycleGAN" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#f59e0b,#f43f5e);">CycleGAN translation <i class="fas fa-wand-magic-sparkles"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/GAN-dog-fid/GAN/dog-fid/PROGRESS.md" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#6366f1,#0ea5e9);">Iteration log <i class="fas fa-book"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Project 09: Diffusion Research Column -->
+                    <div class="proj-card reveal reveal-s5">
+                        <div class="proj-header" style="background:linear-gradient(135deg,#0ea5e9,#a855f7);">
+                            <span class="proj-num">09</span>
+                            <i class="fas fa-wind fa-2x"></i>
+                            <div class="proj-preview">
+                                <div class="preview-scan">
+                                    <i class="fas fa-wind" style="position:relative;z-index:1;"></i>
+                                    <div class="scan-line"></div>
+                                </div>
+                                <span class="preview-label">DENOISING_DIFFUSION</span>
+                            </div>
+                        </div>
+                        <div class="proj-body">
+                            <h3>Diffusion research column</h3>
+                            <p>Diffusion from scratch: unconditional DDPM (U-Net + ε prediction) → class conditioning + classifier-free guidance (CFG) → two-stage 4× SRNet upsampling → mini Latent Diffusion (VAE latent space + text cross-attention), with notes and code-walkthrough notebooks.</p>
+                            <div class="proj-tags">
+                                <span class="proj-tag">PyTorch</span>
+                                <span class="proj-tag">DDPM</span>
+                                <span class="proj-tag">CFG</span>
+                                <span class="proj-tag">U-Net</span>
+                                <span class="proj-tag">Latent Diffusion</span>
+                                <span class="proj-tag">Jupyter Notebook</span>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/Diffusion" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#0ea5e9,#a855f7);">Column overview <i class="fas fa-diagram-project"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/blob/Diffusion/Diffusion/diffusion.md" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#a855f7,#6366f1);">Study notes <i class="fas fa-book"></i></a>
+                                <a href="https://github.com/lucky-money-account/repository_for_machine_learning/tree/Diffusion/Diffusion" target="_blank" class="proj-link" style="background:linear-gradient(135deg,#6366f1,#0ea5e9);">Code and Notebook <i class="fas fa-code"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT -->
+        <section id="contact">
+            <div class="container">
+                <h2 class="section-title reveal"><span>08.</span> Contact</h2>
+                <div class="contact-grid">
+                    <div class="reveal">
+                        <p class="intro">If you are interested in my projects or have any questions, feel free to reach out!</p>
+                        <div class="ci-item">
+                            <i class="fas fa-envelope"></i>
+                            <div><h3>EMAIL</h3><p>2025091205018@std.uestc.edu.cn</p></div>
+                        </div>
+                        <div class="ci-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div><h3>LOCATION</h3><p>UESTC Shahe Campus</p></div>
+                        </div>
+                        <div class="contact-socials">
+                            <a href="https://github.com/lucky-money-account" target="_blank"><i class="fab fa-github"></i></a>
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-weibo"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <button class="back-to-top" id="backToTop"><i class="fas fa-chevron-up"></i></button>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 MONEYFOREVER // ALL_RIGHTS_RESERVED</p>
+        </div>
+    </footer>
+
+    <script>
+        /* ═══════════════════════════ STARFIELD ═══════════════════════════ */
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        let w, h;
+
+        function resizeCanvas() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const STAR_COUNT = 120;
+        for (let i = 0; i < STAR_COUNT; i++) {
+            stars.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 1.6 + 0.4,
+                dx: (Math.random() - 0.5) * 0.3,
+                dy: (Math.random() - 0.5) * 0.3,
+                opacity: Math.random() * 0.7 + 0.3,
+                pulse: Math.random() * Math.PI * 2,
+            });
+        }
+
+        function drawStars() {
+            ctx.clearRect(0, 0, w, h);
+            stars.forEach(s => {
+                s.x += s.dx;
+                s.y += s.dy;
+                if (s.x < 0) s.x = w;
+                if (s.x > w) s.x = 0;
+                if (s.y < 0) s.y = h;
+                if (s.y > h) s.y = 0;
+
+                const flicker = 0.5 + 0.5 * Math.sin(s.pulse + Date.now() * 0.002);
+                const alpha = s.opacity * (0.6 + 0.4 * flicker);
+
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(200,220,255,${alpha})`;
+                ctx.fill();
+
+                if (s.r > 1.2) {
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r * 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0,229,255,${alpha * 0.08})`;
+                    ctx.fill();
+                }
+            });
+
+            for (let i = 0; i < stars.length; i++) {
+                for (let j = i + 1; j < stars.length; j++) {
+                    const dx = stars[i].x - stars[j].x;
+                    const dy = stars[i].y - stars[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(stars[i].x, stars[i].y);
+                        ctx.lineTo(stars[j].x, stars[j].y);
+                        ctx.strokeStyle = `rgba(0,229,255,${0.04 * (1 - dist / 100)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(drawStars);
+        }
+        drawStars();
+
+        /* ═══════════════════════════ TYPEWRITER ═══════════════════════════ */
+        const phrases = [
+            'Software Engineering student',
+            'Deep learning enthusiast',
+            'Python developer',
+            'Always learning...',
+        ];
+        let phraseIdx = 0, charIdx = 0, isDeleting = false;
+        const typeEl = document.getElementById('typewriter-text');
+        const typeSpeed = 80, deleteSpeed = 40, pauseTime = 2000;
+
+        function type() {
+            const current = phrases[phraseIdx];
+            if (isDeleting) {
+                charIdx--;
+                typeEl.textContent = current.substring(0, charIdx);
+            } else {
+                charIdx++;
+                typeEl.textContent = current.substring(0, charIdx);
+            }
+
+            let delay = isDeleting ? deleteSpeed : typeSpeed;
+
+            if (!isDeleting && charIdx === current.length) {
+                delay = pauseTime;
+                isDeleting = true;
+            } else if (isDeleting && charIdx === 0) {
+                isDeleting = false;
+                phraseIdx = (phraseIdx + 1) % phrases.length;
+                delay = 300;
+            }
+
+            setTimeout(type, delay);
+        }
+        setTimeout(type, 1000);
+
+        /* ═══════════════════════════ MOTTO TERMINAL ═══════════════════════════ */
+        const mottos = [
+            'Talk is cheap. Show me the code.',
+            'Stay hungry, stay foolish.',
+            'Hello, World!',
+            'It works on my machine.',
+            'First, solve the problem. Then, write the code.',
+            'Move fast and break things.',
+            'There is no cloud. It\'s just someone else\'s computer.',
+            'Code is like humor. When you have to explain it, it\'s bad.',
+            'Any fool can write code a computer understands.',
+            'Make it work, make it right, make it fast.',
+        ];
+        const mtText = document.getElementById('mtText');
+        let mottoIdx = 0;
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?/';
+
+        function glitchTo(text, callback) {
+            const original = mtText.textContent;
+            const targetLen = text.length;
+            let iterations = 0;
+            const maxIter = 8;
+            function scramble() {
+                iterations++;
+                if (iterations >= maxIter) {
+                    mtText.textContent = text;
+                    if (callback) callback();
+                    return;
+                }
+                let scrambled = '';
+                const revealRatio = iterations / maxIter;
+                for (let i = 0; i < targetLen; i++) {
+                    if (i < Math.floor(revealRatio * targetLen)) {
+                        scrambled += text[i];
+                    } else {
+                        scrambled += chars[Math.floor(Math.random() * chars.length)];
+                    }
+                }
+                mtText.textContent = scrambled;
+                setTimeout(scramble, 50 + iterations * 10);
+            }
+            scramble();
+        }
+
+        setInterval(() => {
+            mottoIdx = (mottoIdx + 1) % mottos.length;
+            glitchTo(mottos[mottoIdx]);
+        }, 5000);
+
+        /* ═══════════════════════════ BINARY RAIN GENERATOR ═══════════════════════ */
+        const mtDisplay = document.getElementById('mtDisplay');
+        function spawnRain() {
+            const span = document.createElement('span');
+            span.className = 'mt-rain';
+            span.style.left = Math.random() * 90 + '%';
+            span.style.animationDuration = (Math.random() * 4 + 3) + 's';
+            span.style.animationDelay = Math.random() * 3 + 's';
+            let rain = '';
+            for (let i = 0; i < 12; i++) rain += Math.random() > 0.5 ? '0' : '1';
+            rain += '\n' + rain + '\n' + rain;
+            span.textContent = rain;
+            mtDisplay.appendChild(span);
+            setTimeout(() => { span.remove(); }, 7000);
+        }
+        setInterval(spawnRain, 400);
+
+        /* ═══════════════════════════ SCROLL REVEAL ═══════════════════════════ */
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            },
+            { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+        );
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        /* ═══════════════════════════ SKILL BARS ANIMATION ═══════════════════════════ */
+        const skillObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const fills = entry.target.querySelectorAll('.skill-fill');
+                    fills.forEach(f => {
+                        f.style.width = f.dataset.width;
+                    });
+                    skillObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+        document.querySelectorAll('.skill-bars .glass-card').forEach(el => skillObserver.observe(el));
+
+        /* ═══════════════════════════ NAVIGATION ═══════════════════════════ */
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.querySelector('.nav-links');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+                document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                if (window.innerWidth <= 768) {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('active');
+                }
+            });
+        });
+
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            header.classList.toggle('scrolled', window.scrollY > 50);
+
+            let current = '';
+            document.querySelectorAll('section').forEach(sec => {
+                if (window.scrollY >= sec.offsetTop - 200) {
+                    current = sec.getAttribute('id');
+                }
+            });
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        /* ═══════════════════════════ THEME TOGGLE ═══════════════════════════ */
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            themeIcon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+        });
+
+        /* ═══════════════════════════ COUNTER ANIMATION ═══════════════════════════ */
+        const statObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const el = entry.target;
+                const target = parseInt(el.dataset.target);
+                const prefix = el.dataset.prefix || '';
+                const suffix = el.dataset.suffix || '';
+                const duration = 1200;
+                const start = performance.now();
+                function tick(now) {
+                    const progress = Math.min((now - start) / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    const current = Math.round(eased * target);
+                    el.textContent = prefix + current + suffix;
+                    if (progress < 1) requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
+                statObserver.unobserve(el);
+            });
+        }, { threshold: 0.6 });
+        document.querySelectorAll('.stat-value[data-target]').forEach(el => statObserver.observe(el));
+
+        /* ═══════════════════════════ CURSOR GLOW ═══════════════════════════ */
+        const cursorGlow = document.getElementById('cursorGlow');
+        let glowTimeout;
+        document.addEventListener('mousemove', (e) => {
+            cursorGlow.style.left = e.clientX + 'px';
+            cursorGlow.style.top = e.clientY + 'px';
+            cursorGlow.style.opacity = '1';
+            clearTimeout(glowTimeout);
+            glowTimeout = setTimeout(() => { cursorGlow.style.opacity = '0'; }, 2000);
+        });
+
+        /* ═══════════════════════════ BACK TO TOP ═══════════════════════════ */
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            backToTop.classList.toggle('show', window.scrollY > 500);
+        });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+                /* ═══════════════════════════ AVATAR ROTATION + CLICK FX ═══════════════════════════ */
+        (function () {
+            // 把新的阿狸图片放进 avatars/ 目录后，在这里登记文件名即可
+            const AVATARS = [
+                'avatars/ali-1.jpg',
+                'avatars/ali-2.jpg',
+                'avatars/ali-3.jpg',
+                'avatars/ali-4.jpg',
+                'avatars/ali-5.jpg',
+                'avatars/ali-6.jpg',
+                'avatars/ali-7.jpg',
+            ];
+            const INTERVAL = 6000; // 换图间隔（毫秒）
+
+            const fx = document.getElementById('avatarFx');
+            if (!fx || AVATARS.length < 2) return;
+
+            fx.innerHTML = '';
+            const slides = AVATARS.map((src, i) => {
+                const img = document.createElement('img');
+                img.className = 'avatar-slide' + (i === 0 ? ' active' : '');
+                img.alt = 'Ali';
+                img.src = src;
+                fx.appendChild(img);
+                return img;
+            });
+            // 预加载其余图片，避免切换时闪白
+            AVATARS.slice(1).forEach(s => { const p = new Image(); p.src = s; });
+
+            let cur = 0, timer = null;
+            function advance() {
+                const next = (cur + 1) % slides.length;
+                slides[next].classList.add('active');
+                slides[cur].classList.remove('active');
+                cur = next;
+            }
+            function restart() {
+                clearInterval(timer);
+                timer = setInterval(advance, INTERVAL);
+            }
+            restart();
+
+            /* ── 点击头像：切下一张 + 故障特效 + 霓虹光环 ── */
+            const frame = document.getElementById('avatarFrame');
+            const wrap = document.querySelector('.avatar-wrap');
+            if (frame) {
+                frame.addEventListener('click', (e) => {
+                    advance();
+                    restart();
+                    spawnClickFX(e.clientX, e.clientY);
+                    fx.classList.remove('glitch');
+                    void fx.offsetWidth;              // 强制重排以重启动画
+                    fx.classList.add('glitch');
+                    setTimeout(() => fx.classList.remove('glitch'), 460);
+                    if (wrap) {
+                        const ring = document.createElement('div');
+                        ring.className = 'avatar-pulse';
+                        wrap.appendChild(ring);
+                        setTimeout(() => ring.remove(), 800);
+                    }
+                });
+            }
+        })();
+
+        /* ═══════════════════════════ CLICK FX: neon ring + 0/1 burst ═══════════════════════════ */
+        function spawnClickFX(x, y) {
+            const ring = document.createElement('div');
+            ring.className = 'click-ripple';
+            ring.style.left = x + 'px';
+            ring.style.top = y + 'px';
+            document.body.appendChild(ring);
+            setTimeout(() => ring.remove(), 720);
+
+            const burst = document.createElement('div');
+            burst.className = 'click-burst';
+            burst.style.left = x + 'px';
+            burst.style.top = y + 'px';
+            const n = 12;
+            for (let i = 0; i < n; i++) {
+                const bit = document.createElement('span');
+                bit.className = 'click-bit';
+                bit.textContent = Math.random() < 0.5 ? '0' : '1';
+                const cyan = Math.random() < 0.7;
+                bit.style.color = cyan ? '#00e5ff' : '#00e676';
+                bit.style.textShadow = cyan
+                    ? '0 0 8px rgba(0,229,255,.95), 0 0 18px rgba(0,229,255,.5)'
+                    : '0 0 8px rgba(0,230,118,.95), 0 0 18px rgba(0,230,118,.5)';
+                const ang = (Math.PI * 2 * i) / n + (Math.random() - 0.5) * 0.6;
+                const dist = 46 + Math.random() * 48;
+                bit.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(1) + 'px');
+                bit.style.setProperty('--dy', (Math.sin(ang) * dist).toFixed(1) + 'px');
+                bit.style.animationDelay = (Math.random() * 0.09).toFixed(2) + 's';
+                bit.style.fontSize = (11 + Math.random() * 5).toFixed(0) + 'px';
+                burst.appendChild(bit);
+            }
+            document.body.appendChild(burst);
+            setTimeout(() => burst.remove(), 980);
+        }
+
+        document.addEventListener('click', (e) => {
+            const t = e.target;
+            if (t.closest('a, button, input, textarea, select, .avatar-frame')) return;
+            spawnClickFX(e.clientX, e.clientY);
+        });
+
+    </script>
+</body>
+</html>
+

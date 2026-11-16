@@ -1,6 +1,14 @@
 {
   "posts": [
     {
+      "slug": "pblf-image-processing-report",
+      "title": "基于人工智能的图像处理技术课程报告",
+      "date": "2026-11-16",
+      "summary": "PBLF 课程项目实验报告：车牌识别（传统方法 + HOG/SVM）与图像分类（Iris、MNIST、猫狗）的完整设计、实现、测试与延伸实验，含 21 张图表。",
+      "tags": ["课程项目", "图像处理", "实验报告"],
+      "file": "posts/pblf-image-processing-report.md"
+    },
+    {
       "slug": "diffusion",
       "title": "Diffusion 模型核心学习笔记（从 U-Net 到 DiT 的桥梁）",
       "date": "2026-11-02",

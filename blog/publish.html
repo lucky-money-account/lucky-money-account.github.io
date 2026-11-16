@@ -55,17 +55,23 @@
                 <h2>拖拽上传</h2>
                 <div class="dropzone" id="dropzone">
                     <div class="dz-icon">⇩</div>
-                    <div class="dz-main">把 .md 文件拖到这里，或点击选择文件</div>
-                    <div class="dz-sub">支持多选；文件会先本地预览，确认后再发布。图片暂不支持自动上传（可放 blog/assets/ 并在文中用相对路径）。</div>
+                    <div class="dz-main">把 .md 文件或图片拖到这里，或点击选择文件</div>
+                    <div class="dz-sub">支持多选；Markdown 会先在本地预览，确认后再发布。图片（png / jpg / jpeg / gif / webp / svg）会随文章一起上传到 <code>blog/assets/&lt;slug&gt;/</code>，正文里的图片引用会被自动重写。</div>
                     <div class="dz-sub" style="margin-top:6px;">公式用 $...$ / $$...$$ 包裹；含 $ 的代码请放进围栏代码块，货币符号建议写作“美元”以免被当成公式。</div>
                 </div>
-                <input type="file" id="fileInput" accept=".md,.markdown,.txt,text/markdown" multiple hidden>
+                <input type="file" id="fileInput" accept=".md,.markdown,.txt,image/*,text/markdown" multiple hidden>
+
+                <div style="margin-top:16px;">
+                    <div class="hint" style="font-family:var(--font-mono);letter-spacing:1px;margin-bottom:8px;">待上传图片</div>
+                    <div id="imageList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                </div>
 
                 <div class="file-list" id="fileList"></div>
 
                 <div class="actions-row">
                     <button class="btn-primary" id="publishBtn">发布全部到 GitHub</button>
                     <button class="btn-sm" id="downloadMdBtn">下载 Markdown</button>
+                    <button class="btn-sm" id="downloadImagesBtn">下载关联图片</button>
                     <button class="btn-sm" id="downloadJsonBtn">下载 posts.json</button>
                     <button class="btn-sm muted" id="clearAllBtn">清空列表</button>
                 </div>
@@ -73,14 +79,25 @@
                 <div class="log" id="log"><div>// 发布日志会显示在这里</div></div>
             </div>
 
-            <!-- 3. 手动发布说明 -->
+            <!-- 3. 已发布文章管理 -->
+            <div class="panel">
+                <h2>已发布文章管理</h2>
+                <div class="field-row">
+                    <button class="btn-sm" id="refreshPublishedBtn">刷新列表</button>
+                    <span class="hint" style="flex:1 1 280px;">有 Token 时读取远端 <code>blog/posts.json</code>，否则读取本地列表。删除会同时清理 <code>blog/posts/&lt;slug&gt;.md</code> 与 <code>blog/assets/&lt;slug&gt;/</code> 下的所有图片，<strong>不可恢复</strong>。</span>
+                </div>
+                <div id="publishedList" style="margin-top:14px;"><div class="hint">点击刷新列表</div></div>
+            </div>
+
+            <!-- 4. 手动发布说明 -->
             <div class="panel">
                 <h2>手动发布（无 Token）</h2>
                 <p class="hint">
                     1. 拖入 Markdown，填好标题 / Slug / 摘要 / 标签，点「下载 Markdown」得到 <code>&lt;slug&gt;.md</code>；<br>
                     2. 把文件放到仓库的 <code>blog/posts/</code> 目录（可通过 GitHub 网页 Upload files 直接拖拽上传）；<br>
-                    3. 点「下载 posts.json」，用它替换仓库里的 <code>blog/posts.json</code>（或手动在 JSON 的 <code>posts</code> 数组里加一条记录）；<br>
-                    4. 提交后等待 GitHub Pages 重新构建，刷新 <a href="index.html">文章列表</a> 即可看到。
+                    3. 若文章带图片：点「下载关联图片」，把图片放到 <code>blog/assets/&lt;slug&gt;/</code> 目录（文件名与下载时一致），Markdown 里用 <code>assets/&lt;slug&gt;/&lt;文件名&gt;</code> 引用；<br>
+                    4. 点「下载 posts.json」，用它替换仓库里的 <code>blog/posts.json</code>（或手动在 JSON 的 <code>posts</code> 数组里加一条记录）；<br>
+                    5. 提交后等待 GitHub Pages 重新构建，刷新 <a href="index.html">文章列表</a> 即可看到。
                 </p>
             </div>
         </div>
@@ -103,7 +120,7 @@
 
         var REPO = { owner: 'lucky-money-account', repo: 'lucky-money-account.github.io', branch: 'main' };
         var TOKEN_KEY = 'mf_blog_github_token_v1';
-        var state = { token: '', items: [], busy: false };
+        var state = { token: '', items: [], images: [], busy: false };
 
         var $ = function (id) { return document.getElementById(id); };
         var logEl = $('log');
@@ -162,6 +179,146 @@
                 return t.replace(/[*_`$]/g, '').slice(0, 120);
             }
             return '';
+        }
+
+        /* ── 图片：文件名安全化 / 引用解析 / 重写 ── */
+        function isImageName(name) {
+            return /\.(png|jpe?g|gif|webp|svg)$/i.test(String(name || ''));
+        }
+
+        /* 图片安全文件名：保留字母/数字/中文/._-，空白与其它字符替换为 -，并去掉 / .. ? #（避免路径穿越） */
+        function safeName(name) {
+            var raw = String(name == null ? '' : name).replace(/^.*[\\/]/, '');
+            var extMatch = raw.match(/\.([A-Za-z0-9]{1,10})$/);
+            var ext = extMatch ? extMatch[1].toLowerCase() : '';
+            var base = extMatch ? raw.slice(0, -extMatch[0].length) : raw;
+            base = base.replace(/\.{2,}/g, '-')
+                .replace(/[^A-Za-z0-9\u4e00-\u9fff._-]+/g, '-')
+                .replace(/-{2,}/g, '-')
+                .replace(/^[-.]+|[-.]+$/g, '');
+            if (!base) base = 'image';
+            if (base.length > 80) base = base.slice(0, 80);
+            return ext ? base + '.' + ext : base;
+        }
+
+        function formatSize(bytes) {
+            var n = Number(bytes) || 0;
+            if (n < 1024) return n + ' B';
+            if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+            return (n / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function findImageByName(name) {
+            var key = String(name == null ? '' : name).toLowerCase();
+            if (!key) return null;
+            for (var i = 0; i < state.images.length; i++) {
+                if (String(state.images[i].name || '').toLowerCase() === key) return state.images[i];
+            }
+            return null;
+        }
+
+        function decodeSafe(s) {
+            try { return decodeURIComponent(s); } catch (e) { return s; }
+        }
+
+        /* 从图片引用路径取 basename：去 <>/引号、去 query/hash、URI 解码、取最后一段 */
+        function refBasename(path) {
+            var p = String(path == null ? '' : path).trim();
+            if (!p) return '';
+            if (p.charAt(0) === '<' && p.charAt(p.length - 1) === '>') p = p.slice(1, -1);
+            var cut = p.search(/[?#]/);
+            if (cut >= 0) p = p.slice(0, cut);
+            p = decodeSafe(p).replace(/\\/g, '/');
+            var segs = p.split('/').filter(Boolean);
+            return segs.length ? segs[segs.length - 1] : '';
+        }
+
+        /* 是否是“本地相对路径”的图片引用（http/data/已发布 assets/ 路径都不算） */
+        function isLocalImageRef(path) {
+            var p = String(path == null ? '' : path).trim();
+            if (!p) return false;
+            if (p.charAt(0) === '<' && p.charAt(p.length - 1) === '>') p = p.slice(1, -1);
+            p = p.replace(/\\/g, '/');
+            if (/^(?:[a-z][a-z0-9+.-]*:)/i.test(p)) return false;   /* http: / https: / data: 等 */
+            if (p.indexOf('//') === 0) return false;
+            if (/^[\/#]/.test(p)) return false;                       /* 站内绝对路径 / 锚点 */
+            if (/^assets\//i.test(p) || /(^|\/)blog\/assets\//i.test(p)) return false;
+            return true;
+        }
+
+        function srcValueFromImgTag(tag) {
+            var m = String(tag || '').match(/\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i);
+            if (!m) return '';
+            if (m[1] !== undefined) return m[1];
+            if (m[2] !== undefined) return m[2];
+            return m[3] || '';
+        }
+
+        /* 收集 Markdown ![...](...) 与 HTML <img src="..."> 两种图片引用 */
+        function collectImageRefs(md) {
+            var text = String(md || '');
+            var refs = [];
+            var m;
+            var mdRe = /!\[[^\]\n]*\]\(\s*(<[^>\n]*>|[^\s()]+)/g;
+            while ((m = mdRe.exec(text)) !== null) refs.push(m[1]);
+            var imgRe = /<img\b[^>]*>/gi;
+            while ((m = imgRe.exec(text)) !== null) {
+                var src = srcValueFromImgTag(m[0]);
+                if (src) refs.push(src);
+            }
+            return refs;
+        }
+
+        /* 关联当前 item 正文引用到的待上传图片；unmatched 是本地相对路径但找不到文件的引用 */
+        function associateImages(item) {
+            var refs = collectImageRefs(item && item.text);
+            var matched = [], unmatched = [], seen = {};
+            for (var i = 0; i < refs.length; i++) {
+                var base = refBasename(refs[i]);
+                if (!base) continue;
+                var key = base.toLowerCase();
+                if (seen[key]) continue;
+                seen[key] = true;
+                var img = findImageByName(base);
+                if (img) matched.push({ img: img, safe: safeName(img.name), ref: refs[i] });
+                else if (isLocalImageRef(refs[i])) unmatched.push(base);
+            }
+            return { matched: matched, unmatched: unmatched };
+        }
+
+        /* 把 md 中匹配到待上传图片的引用重写为 assets/<slug>/<安全名>（Markdown 与 HTML 两种写法） */
+        function rewriteItemText(item) {
+            var slug = String((item && item.slug) || '');
+            var assoc = associateImages(item);
+            var target = {};
+            assoc.matched.forEach(function (m) { target[String(m.img.name).toLowerCase()] = m.safe; });
+            var changed = 0;
+            var text = String((item && item.text) || '');
+            var targetFor = function (raw) {
+                var base = refBasename(raw);
+                if (!base) return null;
+                var safe = target[base.toLowerCase()];
+                if (!safe) return null;
+                return 'assets/' + slug + '/' + safe;
+            };
+            if (Object.keys(target).length) {
+                text = text.replace(/!\[([^\]\n]*)\]\(\s*(<[^>\n]*>|[^\s()]+)([^)\n]*)\)/g, function (all, alt, rawPath, tail) {
+                    var p = targetFor(rawPath);
+                    if (!p) return all;
+                    changed++;
+                    return '![' + alt + '](' + p + tail + ')';
+                });
+                text = text.replace(/<img\b[^>]*>/gi, function (tag) {
+                    return tag.replace(/(\bsrc\s*=\s*)(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i, function (whole, prefix, dq, sq, bare) {
+                        var raw = dq !== undefined ? dq : (sq !== undefined ? sq : bare);
+                        var p = targetFor(raw);
+                        if (!p) return whole;
+                        changed++;
+                        return prefix + '"' + p + '"';
+                    });
+                });
+            }
+            return { text: text, matched: assoc.matched, unmatched: assoc.unmatched, rewritten: changed };
         }
 
         /* ── Token 配置 ── */
@@ -251,14 +408,19 @@
             return new TextDecoder('utf-8').decode(bytes);
         }
 
-        async function ghPut(path, text, message) {
+        /* 取远端文件 sha；不存在返回 null，其它错误抛出 */
+        async function getSha(path) {
             var head = await fetch(apiUrl(path) + '?ref=' + REPO.branch, { headers: apiHeaders() });
-            var sha = null;
             if (head.ok) {
-                sha = (await head.json()).sha;
-            } else if (head.status !== 404) {
-                throw new Error('读取 ' + path + ' 失败：' + await readErr(head) + authHint(head.status));
+                var j = await head.json();
+                return (j && j.sha) ? j.sha : null;
             }
+            if (head.status === 404) return null;
+            throw new Error('读取 ' + path + ' 失败：' + await readErr(head) + authHint(head.status));
+        }
+
+        async function ghPut(path, text, message) {
+            var sha = await getSha(path);
             var body = { message: message, content: toBase64(text), branch: REPO.branch };
             if (sha) body.sha = sha;
             var res = await fetch(apiUrl(path), {
@@ -270,13 +432,80 @@
             return res.json();
         }
 
+        /* 二进制写文件：图片必须用 base64，不能用 TextEncoder（会把二进制当文本编码） */
+        function bytesToBase64(bytes) {
+            var bin = '';
+            var chunk = 0x8000;
+            for (var i = 0; i < bytes.length; i += chunk) {
+                bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+            }
+            return btoa(bin);
+        }
+        async function ghPutBinary(path, blob, message) {
+            var sha = await getSha(path);
+            var buf = await blob.arrayBuffer();
+            var body = { message: message, content: bytesToBase64(new Uint8Array(buf)), branch: REPO.branch };
+            if (sha) body.sha = sha;
+            var res = await fetch(apiUrl(path), {
+                method: 'PUT',
+                headers: Object.assign({ 'Content-Type': 'application/json' }, apiHeaders()),
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) throw new Error('写入 ' + path + ' 失败：' + await readErr(res) + authHint(res.status));
+            return res.json();
+        }
+
+        /* 删除远端文件；sha 可传已知值，否则先查询。
+           返回 true=已删除，false=本来就不存在（404 视为已不存在）；其它状态抛错 */
+        async function ghDelete(path, sha, message) {
+            if (!sha) sha = await getSha(path);
+            if (!sha) return false;
+            var res = await fetch(apiUrl(path), {
+                method: 'DELETE',
+                headers: Object.assign({ 'Content-Type': 'application/json' }, apiHeaders()),
+                body: JSON.stringify({ message: message, sha: sha, branch: REPO.branch })
+            });
+            if (res.ok) return true;
+            if (res.status === 404) return false;
+            throw new Error('删除 ' + path + ' 失败：' + await readErr(res) + authHint(res.status));
+        }
+
+        /* 读取目录列表（Contents API 返回数组）；目录不存在返回 null */
+        async function ghGetDir(path) {
+            var res = await fetch(apiUrl(path) + '?ref=' + REPO.branch, { headers: apiHeaders() });
+            if (res.status === 404) return null;
+            if (!res.ok) throw new Error('读取目录 ' + path + ' 失败：' + await readErr(res) + authHint(res.status));
+            var j = await res.json();
+            if (!Array.isArray(j)) throw new Error('路径不是目录：' + path);
+            return j;
+        }
+
         /* ── 文件列表 ── */
+        /* 图片按文件名去重：同名覆盖（方便替换更新后的图片） */
+        function queueImage(file) {
+            var key = String(file.name || '').toLowerCase();
+            for (var i = 0; i < state.images.length; i++) {
+                if (String(state.images[i].name || '').toLowerCase() === key) {
+                    state.images[i] = { name: file.name, size: file.size, file: file };
+                    return true;
+                }
+            }
+            state.images.push({ name: file.name, size: file.size, file: file });
+            return false;
+        }
+
         async function addFiles(fileList) {
             var files = Array.prototype.slice.call(fileList || []);
             for (var i = 0; i < files.length; i++) {
                 var f = files[i];
+                /* 图片：加入待上传图片队列，发布时按 article slug 上传 */
+                if (isImageName(f.name)) {
+                    var replaced = queueImage(f);
+                    log((replaced ? '已替换同名图片：' : '已添加图片：') + f.name + '（' + formatSize(f.size) + '）');
+                    continue;
+                }
                 if (!/\.(md|markdown|txt)$/i.test(f.name)) {
-                    log('跳过非 Markdown 文件：' + f.name, 'err');
+                    log('跳过不支持的文件：' + f.name + '（支持 .md/.markdown/.txt 与 png/jpg/jpeg/gif/webp/svg）', 'err');
                     continue;
                 }
                 var text;
@@ -299,13 +528,63 @@
                 log('已添加：' + f.name);
             }
             renderItems();
+            renderImages();
+        }
+
+        /* 待上传图片列表 */
+        function renderImages() {
+            var box = $('imageList');
+            if (!box) return;
+            box.innerHTML = '';
+            if (!state.images.length) {
+                var empty = document.createElement('div');
+                empty.className = 'hint';
+                empty.textContent = '还没有待上传图片。把 png / jpg / jpeg / gif / webp / svg 一起拖进来即可，发布时会按文章 slug 上传到 blog/assets/<slug>/。';
+                box.appendChild(empty);
+                return;
+            }
+            var used = {};
+            state.items.forEach(function (item) {
+                associateImages(item).matched.forEach(function (mm) {
+                    used[String(mm.img.name).toLowerCase()] = true;
+                });
+            });
+            state.images.forEach(function (img, idx) {
+                var row = document.createElement('div');
+                row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:rgba(5,9,20,0.5);flex-wrap:wrap;';
+                var nameEl = document.createElement('span');
+                nameEl.style.cssText = 'font-family:var(--font-mono);font-size:0.76rem;color:var(--cyan);word-break:break-all;';
+                nameEl.textContent = img.name;
+                var sizeEl = document.createElement('span');
+                sizeEl.className = 'hint';
+                sizeEl.textContent = formatSize(img.size);
+                var stateEl = document.createElement('span');
+                stateEl.className = 'hint';
+                stateEl.style.marginLeft = 'auto';
+                stateEl.textContent = used[String(img.name).toLowerCase()] ? '已关联文章' : '未被文章引用，不会上传';
+                var del = document.createElement('button');
+                del.type = 'button';
+                del.className = 'btn-sm muted';
+                del.textContent = '移除';
+                del.addEventListener('click', function () {
+                    state.images.splice(idx, 1);
+                    renderImages();
+                    renderItems();
+                    log('已移除图片：' + img.name);
+                });
+                row.appendChild(nameEl);
+                row.appendChild(sizeEl);
+                row.appendChild(stateEl);
+                row.appendChild(del);
+                box.appendChild(row);
+            });
         }
 
         function renderItems() {
             var box = $('fileList');
             box.innerHTML = '';
             if (!state.items.length) {
-                box.innerHTML = '<div class="hint">还没有待发布文件。拖拽或点击上方区域添加 Markdown。</div>';
+                box.innerHTML = '<div class="hint">还没有待发布文件。拖拽或点击上方区域添加 Markdown（图片可一起拖入）。</div>';
                 return;
             }
             state.items.forEach(function (item, idx) {
@@ -325,11 +604,48 @@
                         '<label>摘要<input type="text" data-field="summary" value="' + esc(item.summary) + '"></label>' +
                         '<label>标签（逗号分隔）<input type="text" data-field="tags" value="' + esc(item.tags) + '" placeholder="生成式 AI, VAE"></label>' +
                     '</div>' +
+                    '<div class="fc-assoc" style="margin-top:10px;font-size:0.76rem;line-height:1.8;"></div>' +
                     '<div class="fc-preview"></div>';
+
+                /* 关联图片：全部用 textContent 渲染，slug/title/文件名都不可信 */
+                var assocEl = card.querySelector('.fc-assoc');
+                var renderAssoc = function () {
+                    assocEl.innerHTML = '';
+                    var assoc = associateImages(item);
+                    if (!assoc.matched.length && !assoc.unmatched.length) {
+                        var none = document.createElement('div');
+                        none.className = 'hint';
+                        none.textContent = '关联图片：正文没有引用图片';
+                        assocEl.appendChild(none);
+                        return;
+                    }
+                    if (assoc.matched.length) {
+                        var head = document.createElement('div');
+                        head.className = 'hint';
+                        head.textContent = '关联图片（发布时先上传，再上传 Markdown）：';
+                        assocEl.appendChild(head);
+                        assoc.matched.forEach(function (mm) {
+                            var line = document.createElement('div');
+                            line.className = 'hint';
+                            line.style.color = 'var(--green)';
+                            line.textContent = '将上传：' + mm.img.name + ' → assets/' + item.slug + '/' + mm.safe;
+                            assocEl.appendChild(line);
+                        });
+                    }
+                    assoc.unmatched.forEach(function (base) {
+                        var warn = document.createElement('div');
+                        warn.className = 'hint';
+                        warn.style.color = '#ff7d9c';
+                        warn.textContent = '⚠ 未找到图片文件 ' + base + '，发布后会保持原路径';
+                        assocEl.appendChild(warn);
+                    });
+                };
+                renderAssoc();
 
                 card.querySelectorAll('input[data-field]').forEach(function (input) {
                     input.addEventListener('input', function () {
                         item[input.dataset.field] = input.value;
+                        if (input.dataset.field === 'slug') renderAssoc();
                     });
                 });
                 var previewEl = card.querySelector('.fc-preview');
@@ -337,12 +653,13 @@
                     var open = previewEl.classList.toggle('open');
                     if (open) {
                         previewEl.innerHTML = '<article class="article"></article>';
-                        BlogUI.renderMarkdown(BlogUI.stripLeadingH1(item.text), previewEl.querySelector('article'));
+                        BlogUI.renderMarkdown(BlogUI.stripLeadingH1(rewriteItemText(item).text), previewEl.querySelector('article'));
                     }
                 });
                 card.querySelector('[data-act="remove"]').addEventListener('click', function () {
                     state.items.splice(idx, 1);
                     renderItems();
+                    renderImages();
                 });
                 box.appendChild(card);
             });
@@ -386,11 +703,31 @@
                     }
                 }
 
+                var imageTotal = 0;
                 for (var i = 0; i < valid.length; i++) {
                     var item = valid[i];
+                    var rw = rewriteItemText(item);
+                    rw.unmatched.forEach(function (base) {
+                        log('⚠ ' + item.name + '：未找到图片文件 ' + base + '，发布后会保持原路径', 'err');
+                    });
+                    /* 1) 先把关联图片上传到 blog/assets/<slug>/，再上传 Markdown */
+                    if (rw.matched.length) {
+                        log('· ' + item.slug + ' 有 ' + rw.matched.length + ' 张关联图片待上传');
+                        for (var mi = 0; mi < rw.matched.length; mi++) {
+                            var mm = rw.matched[mi];
+                            var imgPath = 'blog/assets/' + item.slug + '/' + mm.safe;
+                            await ghPutBinary(imgPath, mm.img.file, 'blog: upload image ' + item.slug + '/' + mm.safe);
+                            imageTotal++;
+                            log('  ✓ 图片已上传 ' + imgPath);
+                        }
+                        log('✓ 已上传图片 ' + rw.matched.length + ' 张', 'ok');
+                    }
+                    /* 2) 上传重写后的 Markdown */
                     var path = 'blog/posts/' + item.slug + '.md';
-                    if (byteLength(item.text) > 1000000) log('警告：' + item.name + ' 超过 1MB，GitHub Contents API 可能拒绝', 'err');
-                    await ghPut(path, item.text, 'blog: publish ' + item.slug);
+                    var finalText = rw.text;
+                    if (byteLength(finalText) > 1000000) log('警告：' + item.name + ' 超过 1MB，GitHub Contents API 可能拒绝', 'err');
+                    await ghPut(path, finalText, 'blog: publish ' + item.slug);
+                    if (rw.rewritten) log('  · 已重写 ' + rw.rewritten + ' 处图片引用为 assets/' + item.slug + '/', 'ok');
                     var entry = {
                         slug: item.slug,
                         title: item.title,
@@ -405,6 +742,7 @@
                     log('✓ 已上传 ' + path, 'ok', 'post.html?p=' + encodeURIComponent(item.slug), '打开文章');
                 }
 
+                if (imageTotal) log('✓ 图片总计已上传 ' + imageTotal + ' 张', 'ok');
                 posts.sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
                 await ghPut('blog/posts.json', JSON.stringify({ posts: posts }, null, 2) + '\n', 'blog: update posts index');
                 log('✓ posts.json 已更新', 'ok');
@@ -417,14 +755,16 @@
         }
 
         /* ── 下载（手动发布） ── */
-        function download(name, text) {
-            var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        function downloadBlob(name, blob) {
             var a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = name;
             document.body.appendChild(a);
             a.click();
             setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+        }
+        function download(name, text) {
+            downloadBlob(name, new Blob([text], { type: 'text/plain;charset=utf-8' }));
         }
         function buildManifestFromItems(basePosts) {
             var posts = (basePosts || []).slice();
@@ -444,6 +784,201 @@
             return posts;
         }
 
+        /* ── 已发布文章管理 / 删除（含 assets 清理） ── */
+        function renderPublished(posts, source) {
+            var box = $('publishedList');
+            box.innerHTML = '';
+            if (!posts || !posts.length) {
+                var none = document.createElement('div');
+                none.className = 'hint';
+                none.textContent = '没有已发布文章记录（posts.json 的 posts 为空）。';
+                box.appendChild(none);
+                return;
+            }
+            posts.sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
+            var meta = document.createElement('div');
+            meta.className = 'hint';
+            meta.style.marginBottom = '10px';
+            meta.textContent = '共 ' + posts.length + ' 篇文章 · 来源：' + source;
+            box.appendChild(meta);
+            posts.forEach(function (post) {
+                var slug = String((post && post.slug) || '');
+                var title = String((post && post.title) || slug || '(无标题)');
+                var row = document.createElement('div');
+                row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;background:rgba(5,9,20,0.5);margin-bottom:8px;flex-wrap:wrap;';
+                var info = document.createElement('div');
+                info.style.cssText = 'flex:1 1 260px;min-width:0;';
+                var titleEl = document.createElement('div');
+                titleEl.style.cssText = 'color:#e8f4ff;font-size:0.9rem;word-break:break-word;';
+                titleEl.textContent = title;
+                var subEl = document.createElement('div');
+                subEl.className = 'hint';
+                subEl.style.fontFamily = 'var(--font-mono)';
+                subEl.textContent = slug + ' · ' + String((post && post.date) || '-') + ((post && post.file) ? ' · ' + String(post.file) : '');
+                info.appendChild(titleEl);
+                info.appendChild(subEl);
+                var btnWrap = document.createElement('div');
+                btnWrap.style.cssText = 'display:flex;gap:8px;flex-shrink:0;';
+                var openA = document.createElement('a');
+                openA.className = 'btn-sm';
+                openA.href = 'post.html?p=' + encodeURIComponent(slug);
+                openA.target = '_blank';
+                openA.rel = 'noopener';
+                openA.textContent = '打开';
+                var delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'btn-sm muted';
+                delBtn.textContent = '删除';
+                delBtn.addEventListener('click', function () {
+                    deletePublished({ slug: slug, title: title }, delBtn);
+                });
+                btnWrap.appendChild(openA);
+                btnWrap.appendChild(delBtn);
+                row.appendChild(info);
+                row.appendChild(btnWrap);
+                box.appendChild(row);
+            });
+        }
+
+        async function loadPublished() {
+            if (state.busy) { log('有发布/删除任务正在进行，请稍候', 'err'); return; }
+            var box = $('publishedList');
+            box.innerHTML = '';
+            var loading = document.createElement('div');
+            loading.className = 'hint';
+            loading.textContent = '正在读取 posts.json…';
+            box.appendChild(loading);
+            state.token = $('tokenInput').value.trim();
+            var posts = null, source = '';
+            if (state.token) {
+                try {
+                    var indexText = await ghGetText('blog/posts.json');
+                    if (indexText !== null) {
+                        posts = (JSON.parse(indexText).posts || []);
+                        source = 'GitHub API（远端）';
+                    }
+                } catch (e) {
+                    log('读取远端 posts.json 失败：' + e.message + '，改用本地 posts.json', 'err');
+                }
+            }
+            if (posts === null) {
+                try {
+                    posts = (await BlogUI.fetchJSON('posts.json')).posts || [];
+                    source = '本地 posts.json';
+                } catch (e2) {
+                    box.innerHTML = '';
+                    var fail = document.createElement('div');
+                    fail.className = 'hint';
+                    fail.textContent = '读取 posts.json 失败：' + e2.message;
+                    box.appendChild(fail);
+                    log('读取已发布文章列表失败：' + e2.message + '（本地预览请用 http/https 打开本页）', 'err');
+                    return;
+                }
+            }
+            renderPublished(posts, source);
+            log('已加载已发布文章 ' + posts.length + ' 篇（' + source + '）');
+        }
+
+        /* 删除 blog/assets/<slug>/ 下的全部文件（含一层以上子目录，最多 3 层）。
+           逐条 log ✓/✗，返回 {deleted, failed, skipped} */
+        async function deleteAssetTree(slug) {
+            var report = { deleted: 0, failed: 0, skipped: 0 };
+            async function removeDir(dirPath, lvl) {
+                var entries;
+                try {
+                    entries = await ghGetDir(dirPath);
+                } catch (e) {
+                    report.failed++;
+                    log('✗ 读取图片目录失败：' + dirPath + ' — ' + e.message, 'err');
+                    return;
+                }
+                if (entries === null) {
+                    if (lvl === 0) { report.skipped++; log('· 无图片资源目录（' + dirPath + '），跳过'); }
+                    return;
+                }
+                for (var i = 0; i < entries.length; i++) {
+                    var entry = entries[i] || {};
+                    var p = String(entry.path || '');
+                    if (!p) continue;
+                    if (entry.type === 'file') {
+                        try {
+                            var ok = await ghDelete(p, entry.sha, 'blog: delete asset ' + slug + '/' + String(entry.name || ''));
+                            if (ok) { report.deleted++; log('✓ 已删除图片 ' + p, 'ok'); }
+                            else { report.skipped++; log('· 图片已不存在，跳过：' + p); }
+                        } catch (e2) {
+                            report.failed++;
+                            log('✗ 删除图片失败：' + p + ' — ' + e2.message, 'err');
+                        }
+                    } else if (entry.type === 'dir') {
+                        if (lvl >= 3) {
+                            report.skipped++;
+                            log('⚠ 图片子目录层级过深，已跳过：' + p, 'err');
+                            continue;
+                        }
+                        await removeDir(p, lvl + 1);
+                    } else {
+                        report.skipped++;
+                        log('⚠ 跳过非文件条目（' + String(entry.type) + '）：' + p, 'err');
+                    }
+                }
+            }
+            await removeDir('blog/assets/' + slug, 0);
+            return report;
+        }
+
+        async function deletePublished(meta, btn) {
+            var slug = String((meta && meta.slug) || '');
+            var title = String((meta && meta.title) || slug);
+            if (!confirm('确定删除文章「' + title + '」？将同时删除 blog/posts/' + slug + '.md 和 blog/assets/' + slug + '/ 下的所有文件，且不可恢复。')) return;
+            state.token = $('tokenInput').value.trim();
+            if (!state.token) { log('删除中止：需要先填写并保存 Token（见第 1 节）', 'err'); return; }
+            if (!isValidSlug(slug)) { log('删除中止：slug 非法（' + (slug || '(空)') + '）', 'err'); return; }
+            if (state.busy) { log('有发布/删除任务正在进行，请稍候', 'err'); return; }
+            state.busy = true;
+            if (btn) btn.disabled = true;
+            var done = false;
+            try {
+                log('=== 开始删除文章：' + slug + ' ===');
+                /* 先读远端 posts.json：读失败或不存在就中止，避免把索引写成空 */
+                var indexText = await ghGetText('blog/posts.json');
+                if (indexText === null) throw new Error('远端 posts.json 不存在，已中止删除（避免误删索引）');
+                var parsed;
+                try { parsed = JSON.parse(indexText); }
+                catch (pe) { throw new Error('远端 posts.json 解析失败，已中止：' + pe.message); }
+                var posts = (parsed && parsed.posts) ? parsed.posts.slice() : [];
+
+                /* 1) 清理 blog/assets/<slug>/ 下的所有图片文件（404 = 无资源，跳过） */
+                var assetReport = await deleteAssetTree(slug);
+
+                /* 2) 删除 blog/posts/<slug>.md */
+                var mdPath = 'blog/posts/' + slug + '.md';
+                var mdDeleted = await ghDelete(mdPath, null, 'blog: delete post ' + slug);
+                if (mdDeleted) log('✓ 已删除文章文件 ' + mdPath, 'ok');
+                else log('· 文章文件已不存在，跳过：' + mdPath);
+
+                /* 3) 从 posts.json 移除该 slug 并写回 */
+                var next = posts.filter(function (p) { return String(p && p.slug) !== slug; });
+                if (next.length === posts.length) log('· posts.json 中没有该 slug 的记录，仍会写回索引');
+                await ghPut('blog/posts.json', JSON.stringify({ posts: next }, null, 2) + '\n', 'blog: delete ' + slug);
+                log('✓ posts.json 已更新：移除 ' + slug + '（剩余 ' + next.length + ' 篇）', 'ok');
+
+                if (assetReport.failed) {
+                    log('⚠ 删除完成（有异常）：' + slug + ' · 已清理图片 ' + assetReport.deleted + ' 个 · 失败 ' + assetReport.failed + ' 个，请手动检查 blog/assets/' + slug + '/', 'err');
+                } else {
+                    log('✓ 删除完成：' + slug + ' · 已清理图片 ' + assetReport.deleted + ' 个 · GitHub Pages 通常 1–2 分钟后生效', 'ok');
+                }
+                done = true;
+            } catch (e) {
+                log('✗ 删除失败：' + e.message, 'err');
+            } finally {
+                state.busy = false;
+                if (btn) btn.disabled = false;
+            }
+            if (done) await loadPublished();
+        }
+
+        $('refreshPublishedBtn').addEventListener('click', loadPublished);
+
         $('publishBtn').addEventListener('click', publishAll);
         $('downloadMdBtn').addEventListener('click', function () {
             var items = state.items.filter(function (it) {
@@ -454,8 +989,32 @@
                 return true;
             });
             if (!items.length) { log('没有 slug 合法的文件可下载', 'err'); return; }
-            items.forEach(function (item) { download(item.slug + '.md', item.text); });
+            items.forEach(function (item) {
+                var rw = rewriteItemText(item);
+                rw.unmatched.forEach(function (base) {
+                    log('⚠ ' + item.name + '：未找到图片文件 ' + base + '，发布后会保持原路径', 'err');
+                });
+                download(item.slug + '.md', rw.text);
+                if (rw.matched.length) {
+                    var list = rw.matched.map(function (m) { return m.img.name + ' → ' + m.safe; }).join('、');
+                    log('· ' + item.name + '：请把关联图片放到 blog/assets/' + item.slug + '/ 下同名文件（' + list + '）');
+                }
+            });
             log('已触发下载 ' + items.length + ' 个 Markdown 文件（若浏览器拦截多文件下载，请逐个下载）', 'ok');
+        });
+        $('downloadImagesBtn').addEventListener('click', function () {
+            var jobs = [];
+            state.items.forEach(function (item) {
+                if (!isValidSlug(item.slug)) return;
+                rewriteItemText(item).matched.forEach(function (mm) {
+                    jobs.push({ slug: item.slug, safe: mm.safe, file: mm.img.file });
+                });
+            });
+            if (!jobs.length) { log('没有可下载的关联图片（先拖入图片并在 Markdown 中引用）', 'err'); return; }
+            jobs.forEach(function (job) { downloadBlob(job.safe, job.file); });
+            var dirs = {};
+            jobs.forEach(function (job) { dirs[job.slug] = true; });
+            log('已触发下载 ' + jobs.length + ' 张图片；请分别放入 ' + Object.keys(dirs).map(function (s) { return 'blog/assets/' + s + '/'; }).join('、') + '（保持下载时的文件名）。浏览器可能拦截多文件下载，请允许或逐个下载。', 'ok');
         });
         $('downloadJsonBtn').addEventListener('click', async function () {
             var base = [];
@@ -477,8 +1036,10 @@
         });
         $('clearAllBtn').addEventListener('click', function () {
             state.items = [];
+            state.images = [];
             renderItems();
-            log('列表已清空');
+            renderImages();
+            log('列表已清空（Markdown 与待上传图片）');
         });
 
         /* ── 拖拽 / 选择 ── */
@@ -507,6 +1068,7 @@
         BlogUI.highlightNav();
         loadToken();
         renderItems();
+        renderImages();
         log('发布中心就绪');
     })();
     </script>
